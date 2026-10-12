@@ -1,0 +1,28 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+.next/
+
+# Secrets and local config
+.env
+*.env
+!.env.example
+
+# Databases and uploaded files
+*.sqlite3
+media/
+staticfiles/
+uploads/
+sessions/
+logs/
+
+# IDE / OS
+.idea/
+.DS_Store
+Thumbs.db
