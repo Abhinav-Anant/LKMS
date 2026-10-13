@@ -15,4 +15,9 @@ urlpatterns = [
     path("api/v1/students/", include("students.urls")),
     path("api/v1/admissions/", include("admissions.urls")),
     path("api/v1/fees/", include("fees.urls")),
+    path("api/v1/attendance/", include("attendance.urls")),
+    path("api/v1/assessments/", include("assessments.urls")),
+    path("api/v1/notices/", include("notices.urls")),
+    path("api/v1/parent/", include("portal.urls")),
+    path("api/v1/reports/", include("portal.reports")),
 ]

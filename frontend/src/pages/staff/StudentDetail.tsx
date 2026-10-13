@@ -1,12 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import { OneTimeSecret } from "@/components/OneTimeSecret";
+import { ErrorNote } from "@/components/Panel";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, fetchFileUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { CATEGORIES, ENROLLMENT_STATUS_LABELS, GENDERS, RELATIONSHIPS, STUDENT_STATUS_LABELS, formatDate } from "@/lib/labels";
-import type { StudentDetail as Detail } from "@/lib/types";
+import { CATEGORIES, ENROLLMENT_STATUS_LABELS, GENDERS, RELATIONSHIPS, STUDENT_STATUS_LABELS, formatDate, formatDateTime } from "@/lib/labels";
+import type { StudentDetail as Detail, IssuedCode } from "@/lib/types";
 
 export default function StudentDetail() {
   const { id } = useParams();
@@ -94,6 +97,7 @@ export default function StudentDetail() {
                   ["Education", g.guardian.qualification],
                 ]}
               />
+              {can("students.edit") && s.status === "active" && g.guardian.phone && <ParentCodeButton phone={g.guardian.phone} />}
             </div>
           ))}
         </div>
@@ -163,5 +167,34 @@ function Rows({ rows }: { rows: [string, string | null | undefined][] }) {
           </div>
         ))}
     </dl>
+  );
+}
+
+/** Issue a one-time parent portal sign-in code, for parents who can't receive one on WhatsApp yet. */
+function ParentCodeButton({ phone }: { phone: string }) {
+  const [issued, setIssued] = useState<IssuedCode | null>(null);
+  const issue = useMutation({
+    mutationFn: () => api.post<IssuedCode>("/auth/parent/issue-code/", { phone }),
+    onSuccess: setIssued,
+  });
+  if (issued)
+    return (
+      <div className="mt-3">
+        <OneTimeSecret title="Parent portal sign-in code" value={issued.code} onDone={() => setIssued(null)}>
+          <p className="text-sm">
+            Valid until {formatDateTime(issued.expires_at)} for mobile {issued.phone}. The parent opens the Parents page, chooses
+            "I already have a code" and signs in. They will see: {issued.children.join(", ")}.
+          </p>
+        </OneTimeSecret>
+      </div>
+    );
+  return (
+    <div className="mt-3 space-y-1">
+      <Button variant="outline" size="sm" disabled={issue.isPending}
+        onClick={() => window.confirm(`Create a parent portal sign-in code for ${phone}? Any earlier unused code stops working.`) && issue.mutate()}>
+        Parent sign-in code
+      </Button>
+      <ErrorNote error={issue.error} />
+    </div>
   );
 }

@@ -17,6 +17,15 @@ CAPABILITIES = {
     "fees.request_concession": {"admin", "principal", "accountant", "office"},
     "fees.approve": {"admin", "principal"},
     "audit.view": {"admin", "principal"},
+    # Phase 3: portals. Teachers are further limited to their own sections (academics.scope).
+    "attendance.view": {"admin", "principal", "office", "teacher"},
+    "attendance.mark": {"admin", "principal", "teacher"},
+    "marks.view": {"admin", "principal", "teacher"},
+    "marks.enter": {"admin", "principal", "teacher"},
+    "notices.post": {"admin", "principal", "office", "teacher"},
+    "notices.manage": {"admin", "principal", "office"},
+    "users.manage": {"admin", "principal"},
+    "reports.view": {"admin", "principal"},
 }
 
 

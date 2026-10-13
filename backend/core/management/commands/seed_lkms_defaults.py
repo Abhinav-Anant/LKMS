@@ -4,13 +4,13 @@ Everything here is a PLACEHOLDER until Lotus Kids confirms its real classes,
 sections and document list. Safe to run more than once: existing rows are kept.
 """
 
-from datetime import date
+from datetime import date, time
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from academics.models import AcademicSession, SchoolClass, Section
+from academics.models import AcademicSession, PeriodSlot, SchoolClass, Section, Subject
 from admissions.models import DocumentType
 from core.models import SchoolProfile
 
@@ -33,6 +33,15 @@ DOCUMENTS = [
     ("category-certificate", "Caste / category certificate", False, "Only if applying under SC, ST, OBC, MBC or EWS", True, True),
 ]
 
+SUBJECTS = ["Hindi", "English", "Mathematics", "Environmental Studies", "Science", "Social Science", "Sanskrit",
+            "Computer", "Art", "Physical Education"]
+
+PERIODS = [
+    # number, start, end
+    (1, time(8, 0), time(8, 40)), (2, time(8, 40), time(9, 20)), (3, time(9, 20), time(10, 0)),
+    (4, time(10, 20), time(11, 0)), (5, time(11, 0), time(11, 40)), (6, time(11, 40), time(12, 20)),
+]
+
 
 def current_session_dates(today):
     start_year = today.year if today.month >= 4 else today.year - 1
@@ -40,7 +49,7 @@ def current_session_dates(today):
 
 
 class Command(BaseCommand):
-    help = "Create placeholder classes, sections, sessions and document types."
+    help = "Create placeholder classes, sections, sessions, document types, subjects and periods."
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -68,8 +77,14 @@ class Command(BaseCommand):
                 "allow_pdf": allow_pdf, "allow_image": allow_image, "order": order,
             })
 
+        for order, name in enumerate(SUBJECTS, start=1):
+            Subject.objects.get_or_create(name=name, defaults={"code": name.lower().replace(" ", "-")[:20], "order": order})
+        for number, begins, ends in PERIODS:
+            PeriodSlot.objects.get_or_create(number=number, defaults={"start_time": begins, "end_time": ends})
+
         call_command("seed_fee_placeholders", stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS(
             f"Placeholder data ready: sessions {current} (current) and {upcoming} (admissions open), "
-            f"{len(CLASSES)} classes with section A, {len(DOCUMENTS)} document types."
+            f"{len(CLASSES)} classes with section A, {len(DOCUMENTS)} document types, "
+            f"{len(SUBJECTS)} subjects and {len(PERIODS)} periods."
         ))

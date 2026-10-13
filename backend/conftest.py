@@ -84,3 +84,41 @@ def png_file(name="photo.png"):
     buf = io.BytesIO()
     Image.new("RGB", (20, 20), "red").save(buf, format="PNG")
     return SimpleUploadedFile(name, buf.getvalue(), content_type="image/png")
+
+
+@pytest.fixture
+def school(seeded):
+    """Current-session Class 1 A with two students (siblings share a father), a class teacher and a maths teacher."""
+    from datetime import timedelta
+
+    from academics.models import Enrollment, Subject, TeachingAssignment
+    from students.models import Guardian, Student, StudentGuardian
+
+    session = AcademicSession.current()
+    section = Section.objects.get(session=session, school_class=seeded["class1"], name="A")
+    class_teacher = make_user("teacher", "ct")
+    maths_teacher = make_user("teacher", "mt")
+    section.class_teacher = class_teacher
+    section.save()
+    maths = Subject.objects.get(name="Mathematics")
+    TeachingAssignment.objects.create(teacher=maths_teacher, section=section, subject=maths)
+    father = Guardian.objects.create(full_name="Amit Verma", phone="9829011111")
+    students = []
+    for roll, name in enumerate(["Riya", "Kabir"], start=1):
+        student = Student.objects.create(
+            admission_number=f"S{roll:04d}", admission_date=session.start_date - timedelta(days=30),
+            admitted_in_class=seeded["class1"], first_name=name, last_name="Verma", date_of_birth=date(2019, 1, 1),
+            gender="F", address_line="1 Main Road", city="Jaipur", district="Jaipur", pincode="302001",
+        )
+        StudentGuardian.objects.create(student=student, guardian=father, relationship="father", is_primary_contact=True)
+        Enrollment.objects.create(student=student, session=session, section=section, roll_number=roll,
+                                  enrolled_on=session.start_date)
+        students.append(student)
+    return {"session": session, "section": section, "class_teacher": class_teacher, "maths_teacher": maths_teacher,
+            "maths": maths, "students": students, "father": father}
+
+
+def as_user(user):
+    client = APIClient()
+    client.force_authenticate(user)
+    return client

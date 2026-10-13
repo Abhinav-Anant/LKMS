@@ -121,3 +121,79 @@ class Enrollment(models.Model):
     @property
     def school_class(self):
         return self.section.school_class
+
+
+class Subject(models.Model):
+    name = models.CharField(max_length=60, unique=True)
+    code = models.SlugField(max_length=20, unique=True)
+    order = models.PositiveSmallIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class TeachingAssignment(models.Model):
+    """Who teaches which subject in which section. Gives the teacher marks entry for it."""
+
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teaching_assignments")
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="teaching_assignments")
+    subject = models.ForeignKey(Subject, on_delete=models.PROTECT, related_name="teaching_assignments")
+
+    class Meta:
+        ordering = ["section", "subject__order"]
+        constraints = [
+            models.UniqueConstraint(fields=["section", "subject"], name="one_teacher_per_subject_section"),
+        ]
+
+    def __str__(self):
+        return f"{self.teacher} teaches {self.subject} in {self.section}"
+
+
+class PeriodSlot(models.Model):
+    """The school's bell schedule, e.g. period 1 from 8:00 to 8:40."""
+
+    number = models.PositiveSmallIntegerField(unique=True)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    label = models.CharField(max_length=30, blank=True, help_text="Optional, e.g. Assembly")
+
+    class Meta:
+        ordering = ["number"]
+
+    def __str__(self):
+        return f"Period {self.number} ({self.start_time:%H:%M}-{self.end_time:%H:%M})"
+
+    def clean(self):
+        if self.start_time and self.end_time and self.end_time <= self.start_time:
+            raise ValidationError({"end_time": "End time must be after start time."})
+
+
+class TimetableEntry(models.Model):
+    class Weekday(models.IntegerChoices):
+        MONDAY = 1, "Monday"
+        TUESDAY = 2, "Tuesday"
+        WEDNESDAY = 3, "Wednesday"
+        THURSDAY = 4, "Thursday"
+        FRIDAY = 5, "Friday"
+        SATURDAY = 6, "Saturday"
+
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="timetable")
+    weekday = models.PositiveSmallIntegerField(choices=Weekday.choices)
+    period = models.ForeignKey(PeriodSlot, on_delete=models.CASCADE, related_name="entries")
+    subject = models.ForeignKey(Subject, on_delete=models.PROTECT, related_name="+")
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="timetable_entries"
+    )
+
+    class Meta:
+        ordering = ["weekday", "period__number"]
+        constraints = [
+            models.UniqueConstraint(fields=["section", "weekday", "period"], name="one_subject_per_period"),
+        ]
+
+    def __str__(self):
+        return f"{self.section} {self.get_weekday_display()} P{self.period.number}: {self.subject}"

@@ -103,3 +103,34 @@ export function todayISO(): string {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
 }
+
+export const ATTENDANCE_LABELS: Record<string, string> = {
+  present: "Present",
+  absent: "Absent",
+  late: "Late",
+  leave: "On leave",
+};
+
+export const WEEKDAYS: [number, string][] = [
+  [1, "Monday"],
+  [2, "Tuesday"],
+  [3, "Wednesday"],
+  [4, "Thursday"],
+  [5, "Friday"],
+  [6, "Saturday"],
+];
+
+export const ROLE_LABELS: Record<string, string> = {
+  admin: "Administrator",
+  principal: "Principal",
+  office: "Office staff",
+  accountant: "Accountant",
+  teacher: "Teacher",
+  parent: "Parent",
+};
+
+/** "08:00:00" to "8:00" */
+export function formatTime(value: string): string {
+  const [h, m] = value.split(":");
+  return `${Number(h)}:${m}`;
+}

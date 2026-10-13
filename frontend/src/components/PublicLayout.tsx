@@ -15,12 +15,15 @@ export function PublicLayout() {
           <Link to="/" className="text-lg font-semibold text-primary">
             {school?.name ?? "Lotus Kids School"}
           </Link>
-          <nav aria-label="Main" className="flex gap-1">
+          <nav aria-label="Main" className="flex flex-wrap gap-1">
             <NavLink to="/apply" className={navClass}>
               Apply
             </NavLink>
             <NavLink to="/track" className={navClass}>
               Track application
+            </NavLink>
+            <NavLink to="/parent" className={navClass}>
+              Parents
             </NavLink>
             <NavLink to="/staff" className={navClass}>
               Staff sign in

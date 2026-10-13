@@ -3,7 +3,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    """A login. Staff sign in with username and password; parent logins arrive in Phase 3."""
+    """A login. Staff sign in with username and password; parents with their mobile number and a one-time code."""
 
     class Role(models.TextChoices):
         ADMIN = "admin", "Administrator"
@@ -26,3 +26,30 @@ class User(AbstractUser):
     @property
     def is_school_staff(self):
         return self.role in {self.Role.ADMIN, self.Role.PRINCIPAL, self.Role.OFFICE, self.Role.ACCOUNTANT, self.Role.TEACHER}
+
+
+class LoginCode(models.Model):
+    """A one-time 6-digit code for a parent to sign in with their mobile number.
+
+    Only a keyed hash of the code is stored. Codes are sent by WhatsApp (Phase 4)
+    or read out by the school office, which can issue one from the staff portal.
+    """
+
+    class Source(models.TextChoices):
+        REQUESTED = "requested", "Requested by parent"
+        STAFF = "staff", "Issued by school office"
+
+    phone = models.CharField(max_length=10, db_index=True)
+    code_hash = models.CharField(max_length=64)
+    source = models.CharField(max_length=10, choices=Source.choices)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    used_at = models.DateTimeField(null=True, blank=True)
+    issued_by = models.ForeignKey("User", null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Login code for {self.phone} ({self.get_source_display()})"

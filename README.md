@@ -5,11 +5,12 @@ School management system for Lotus Kids School, Rajasthan.
 ## Layout
 
 - `backend/` – Django + Django REST Framework API
-- `frontend/` – React + TypeScript + Vite UI: public admission form and tracking, staff admissions and student screens
+- `frontend/` – React + TypeScript + Vite UI: public admission form, tracking and fee payment; staff, teacher and parent portals
 - `whatsapp-server/` – WhatsApp messaging service (server part of Blastup), wired in Phase 4
 - `docs/LKMS_PLAN.md` – build plan and phase breakdown
 - `docs/ADMISSIONS.md` – how the admission workflow and its API work
 - `docs/FEES.md` – fee setup, invoices, receipts, UPI QR payments and how staff verify them
+- `docs/PORTALS.md` – teacher, parent and admin portals: sign-in, attendance, marks, timetable, notices, users
 
 ## Running the backend locally (Windows, PowerShell)
 
@@ -21,7 +22,7 @@ cd backend
 copy .env.example .env                # then edit if needed
 uv sync
 uv run python manage.py migrate
-uv run python manage.py seed_lkms_defaults   # placeholder classes, sections, documents, fees
+uv run python manage.py seed_lkms_defaults   # placeholder classes, sections, documents, fees, subjects, periods
 uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```

@@ -410,3 +410,240 @@ export interface PayPage {
   submissions: PublicSubmission[];
   receipts: { receipt_number: string; amount: Money; paid_on: string }[];
 }
+
+// Phase 3: portals
+
+export interface SectionDetail extends Section {
+  class_teacher_name: string;
+}
+
+export interface Subject {
+  id: number;
+  name: string;
+  code: string;
+  order: number;
+  is_active: boolean;
+}
+
+export interface TeachingAssignment {
+  id: number;
+  teacher: number;
+  teacher_name: string;
+  section: number;
+  section_label: string;
+  subject: number;
+  subject_name: string;
+}
+
+export interface PeriodSlot {
+  id: number;
+  number: number;
+  start_time: string;
+  end_time: string;
+  label: string;
+}
+
+export interface TimetableEntry {
+  id: number;
+  section: number;
+  section_label: string;
+  weekday: number;
+  period: number;
+  period_number: number;
+  start_time: string;
+  end_time: string;
+  subject: number;
+  subject_name: string;
+  teacher: number | null;
+  teacher_name: string;
+}
+
+export interface MySection {
+  id: number;
+  label: string;
+  class_name: string;
+  name: string;
+  is_class_teacher: boolean;
+  subjects: { id: number; name: string }[];
+  strength: number;
+}
+
+export type AttendanceStatus = "present" | "absent" | "late" | "leave";
+
+export interface AttendanceSheet {
+  section: number;
+  section_label: string;
+  date: string;
+  can_edit: boolean;
+  marked: boolean;
+  marked_by: string | null;
+  rows: {
+    student: number;
+    roll_number: number | null;
+    name: string;
+    admission_number: string;
+    status: AttendanceStatus | null;
+    note: string;
+  }[];
+}
+
+export interface AttendanceMonthRow {
+  student: number;
+  roll_number: number | null;
+  name: string;
+  present: number;
+  absent: number;
+  late: number;
+  leave: number;
+  marked_days: number;
+  percentage: number | null;
+}
+
+export interface Assessment {
+  id: number;
+  section: number;
+  section_label: string;
+  subject: number;
+  subject_name: string;
+  name: string;
+  date: string;
+  max_marks: string;
+  is_published: boolean;
+  published_at: string | null;
+  marks_entered: number;
+}
+
+export interface MarkSheet {
+  assessment: Assessment;
+  can_edit: boolean;
+  rows: {
+    student: number;
+    roll_number: number | null;
+    name: string;
+    admission_number: string;
+    marks: string | null;
+    is_absent: boolean;
+    remark: string;
+  }[];
+}
+
+export type NoticeAudience = "everyone" | "staff" | "parents";
+
+export interface Notice {
+  id: number;
+  title: string;
+  body: string;
+  audience: NoticeAudience;
+  audience_label: string;
+  sections: number[];
+  section_labels: string[];
+  is_published: boolean;
+  published_at: string | null;
+  created_by: number | null;
+  created_by_name: string | null;
+  created_at: string;
+}
+
+export interface StaffUser {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  role: Role;
+  role_label: string;
+  is_active: boolean;
+  must_change_password: boolean;
+  last_login: string | null;
+  date_joined: string;
+}
+
+export interface TemporaryPassword {
+  username: string;
+  temporary_password: string;
+}
+
+export interface PermissionMatrix {
+  roles: { value: Role; label: string }[];
+  capabilities: { key: string; roles: Role[] }[];
+}
+
+export interface Dashboard {
+  session: string | null;
+  date: string;
+  students_total: number;
+  students_by_class: { name: string; students: number }[];
+  attendance_today: {
+    present: number;
+    absent: number;
+    leave: number;
+    sections_marked: number;
+    sections_total: number;
+    sections_not_marked: string[];
+  };
+  fees: { billed: string; collected: string; outstanding: string; collected_this_month: string; overdue_invoices: number };
+  pending: { admissions: number; upi_payments: number; concessions: number };
+}
+
+export interface IssuedCode {
+  phone: string;
+  code: string;
+  expires_at: string;
+  children: string[];
+}
+
+export interface Child {
+  id: number;
+  full_name: string;
+  admission_number: string;
+  class_label: string | null;
+  roll_number: number | null;
+  class_teacher: string | null;
+}
+
+export interface ChildAttendance {
+  month: string;
+  present: number;
+  absent: number;
+  late: number;
+  leave: number;
+  percentage: number | null;
+  days: { date: string; status: AttendanceStatus; note: string }[];
+}
+
+export interface ChildFees {
+  invoices: {
+    id: number;
+    number: string;
+    installment_name: string;
+    due_date: string;
+    net_amount: string;
+    amount_paid: string;
+    balance: string;
+    status: string;
+    status_label: string;
+    pay_link: string | null;
+  }[];
+  payments: { id: number; receipt_number: string; invoice_number: string; amount: string; mode: string; mode_label: string; paid_on: string }[];
+  total_due: string;
+}
+
+export interface ChildMark {
+  assessment: number;
+  name: string;
+  subject: string;
+  date: string;
+  max_marks: string;
+  marks: string | null;
+  is_absent: boolean;
+  remark: string;
+}
+
+export interface ParentNotice {
+  id: number;
+  title: string;
+  body: string;
+  published_at: string | null;
+}

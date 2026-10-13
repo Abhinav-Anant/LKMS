@@ -60,6 +60,10 @@ INSTALLED_APPS = [
     "students",
     "admissions",
     "fees",
+    "attendance",
+    "assessments",
+    "notices",
+    "portal",
 ]
 
 MIDDLEWARE = [
@@ -147,6 +151,7 @@ REST_FRAMEWORK = {
         "public_tracking": os.getenv("THROTTLE_PUBLIC_TRACKING", "30/hour"),
         "login": os.getenv("THROTTLE_LOGIN", "10/minute"),
         "public_payment": os.getenv("THROTTLE_PUBLIC_PAYMENT", "60/hour"),
+        "parent_code": os.getenv("THROTTLE_PARENT_CODE", "20/hour"),
     },
 }
 
@@ -183,6 +188,7 @@ SPECTACULAR_SETTINGS = {
         "PaymentStatusEnum": "fees.models.Payment.Status",
         "ConcessionStatusEnum": "fees.models.Concession.Status",
         "UpiSubmissionStatusEnum": "fees.models.UpiSubmission.Status",
+        "AttendanceStatusEnum": "attendance.models.AttendanceRecord.Status",
     },
 }
 

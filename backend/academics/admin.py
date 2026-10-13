@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AcademicSession, Enrollment, SchoolClass, Section
+from .models import AcademicSession, Enrollment, PeriodSlot, SchoolClass, Section, Subject, TeachingAssignment, TimetableEntry
 
 
 @admin.register(AcademicSession)
@@ -26,3 +26,19 @@ class EnrollmentAdmin(admin.ModelAdmin):
     list_filter = ["session", "section__school_class", "status"]
     search_fields = ["student__first_name", "student__last_name", "student__admission_number"]
     raw_id_fields = ["student"]
+
+
+admin.site.register(Subject)
+admin.site.register(PeriodSlot)
+
+
+@admin.register(TeachingAssignment)
+class TeachingAssignmentAdmin(admin.ModelAdmin):
+    list_display = ["section", "subject", "teacher"]
+    list_filter = ["section__session", "subject"]
+
+
+@admin.register(TimetableEntry)
+class TimetableEntryAdmin(admin.ModelAdmin):
+    list_display = ["section", "weekday", "period", "subject", "teacher"]
+    list_filter = ["section__session", "weekday"]
