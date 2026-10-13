@@ -99,3 +99,23 @@ class AuditLog(models.Model):
         if self.pk:
             raise ValueError("Audit log entries cannot be changed")
         super().save(*args, **kwargs)
+
+
+class Counter(models.Model):
+    """Gap-free running numbers, e.g. receipt numbers per session."""
+
+    key = models.CharField(max_length=64, unique=True)
+    next_value = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.key}: next {self.next_value}"
+
+    @classmethod
+    def take(cls, key):
+        """Return the next number for `key`. Call inside a transaction so a rollback returns it."""
+        cls.objects.get_or_create(key=key)
+        counter = cls.objects.select_for_update().get(key=key)
+        value = counter.next_value
+        counter.next_value += 1
+        counter.save(update_fields=["next_value"])
+        return value

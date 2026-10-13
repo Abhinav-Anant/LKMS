@@ -11,6 +11,11 @@ CAPABILITIES = {
     "academics.view": {"admin", "principal", "office", "accountant", "teacher"},
     "academics.manage": {"admin", "principal"},
     "school.manage": {"admin"},
+    "fees.view": {"admin", "principal", "accountant", "office"},
+    "fees.collect": {"admin", "principal", "accountant"},
+    "fees.manage": {"admin", "principal", "accountant"},
+    "fees.request_concession": {"admin", "principal", "accountant", "office"},
+    "fees.approve": {"admin", "principal"},
     "audit.view": {"admin", "principal"},
 }
 

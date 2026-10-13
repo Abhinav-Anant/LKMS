@@ -34,6 +34,11 @@ export function StaffLayout() {
                   Students
                 </NavLink>
               )}
+              {can("fees.view") && (
+                <NavLink to="/staff/fees" className={navClass}>
+                  Fees
+                </NavLink>
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">
@@ -58,6 +63,7 @@ export function StaffHome() {
   const { can } = useAuth();
   if (can("admissions.view")) return <Navigate to="/staff/applications" replace />;
   if (can("students.view")) return <Navigate to="/staff/students" replace />;
+  if (can("fees.view")) return <Navigate to="/staff/fees" replace />;
   return (
     <p className="text-muted-foreground">
       Your account is set up. The screens for your role arrive in a later phase.

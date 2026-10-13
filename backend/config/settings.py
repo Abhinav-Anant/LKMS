@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "academics",
     "students",
     "admissions",
+    "fees",
 ]
 
 MIDDLEWARE = [
@@ -145,6 +146,7 @@ REST_FRAMEWORK = {
         "public_application": os.getenv("THROTTLE_PUBLIC_APPLICATION", "10/hour"),
         "public_tracking": os.getenv("THROTTLE_PUBLIC_TRACKING", "30/hour"),
         "login": os.getenv("THROTTLE_LOGIN", "10/minute"),
+        "public_payment": os.getenv("THROTTLE_PUBLIC_PAYMENT", "60/hour"),
     },
 }
 
@@ -158,6 +160,19 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:8080")
 
+# Where the React app and the public API are reached; used in payment links and Cashfree callbacks.
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:8080").rstrip("/")
+PUBLIC_API_BASE_URL = os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8000").rstrip("/")
+
+# Cashfree Payment Gateway. Use sandbox keys until the school's account is live.
+CASHFREE_ENV = os.getenv("CASHFREE_ENV", "sandbox")
+if CASHFREE_ENV not in ("sandbox", "production"):
+    raise ImproperlyConfigured("CASHFREE_ENV must be 'sandbox' or 'production'")
+CASHFREE_CLIENT_ID = os.getenv("CASHFREE_CLIENT_ID", "")
+CASHFREE_CLIENT_SECRET = os.getenv("CASHFREE_CLIENT_SECRET", "")
+CASHFREE_API_VERSION = os.getenv("CASHFREE_API_VERSION", "2025-01-01")
+PAY_LINK_MAX_AGE_DAYS = int(os.getenv("PAY_LINK_MAX_AGE_DAYS", "45"))
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "LKMS API",
     "DESCRIPTION": "Lotus Kids Management System",
@@ -169,6 +184,10 @@ SPECTACULAR_SETTINGS = {
         "StudentStatusEnum": "students.models.Student.Status",
         "EnrollmentStatusEnum": "academics.models.Enrollment.Status",
         "RelationshipEnum": "students.choices.Relationship",
+        "InvoiceStatusEnum": "fees.models.Invoice.Status",
+        "PaymentStatusEnum": "fees.models.Payment.Status",
+        "ConcessionStatusEnum": "fees.models.Concession.Status",
+        "OnlineOrderStatusEnum": "fees.models.OnlineOrder.Status",
     },
 }
 

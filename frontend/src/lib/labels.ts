@@ -63,3 +63,45 @@ export const ENROLLMENT_STATUS_LABELS: Record<string, string> = {
   detained: "Detained",
   left: "Left school",
 };
+
+export const INVOICE_STATUS_LABELS: Record<string, string> = {
+  unpaid: "Unpaid",
+  partly_paid: "Partly paid",
+  paid: "Paid",
+  cancelled: "Cancelled",
+};
+
+export const PAYMENT_MODES = [
+  { value: "cash", label: "Cash" },
+  { value: "cheque", label: "Cheque" },
+  { value: "bank_transfer", label: "Bank transfer" },
+  { value: "upi", label: "UPI to school account" },
+];
+
+export const ORDER_STATUS_LABELS: Record<string, string> = {
+  created: "Waiting for payment",
+  paid: "Paid",
+  failed: "Failed",
+  expired: "Expired",
+  mismatch: "Needs checking",
+};
+
+export const CONCESSION_STATUS_LABELS: Record<string, string> = {
+  pending: "Waiting for approval",
+  approved: "Approved",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+};
+
+const rupee = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+export function formatMoney(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === "") return "";
+  return rupee.format(Number(value));
+}
+
+/** Today's date in the browser's time zone as YYYY-MM-DD. */
+export function todayISO(): string {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}

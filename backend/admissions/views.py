@@ -1,5 +1,3 @@
-from contextlib import contextmanager
-
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, status, viewsets
@@ -13,6 +11,7 @@ from rest_framework.views import APIView
 
 from academics.models import SchoolClass
 from core import audit
+from core.errors import as_api_errors
 from core.permissions import Can, has_capability
 from core.storage import private_file_response, validate_upload
 from students.serializers import StudentDetailSerializer
@@ -25,15 +24,6 @@ from .serializers import (
     ApproveSerializer, DocumentSerializer, DocumentTypeSerializer, DocumentUploadSerializer,
     PublicDocumentSerializer, TrackSerializer, TransitionSerializer, VerifySerializer,
 )
-
-
-@contextmanager
-def as_api_errors():
-    """Turn validation errors raised by the services into 400 responses."""
-    try:
-        yield
-    except DjangoValidationError as exc:
-        raise ValidationError(exc.message_dict if hasattr(exc, "error_dict") else exc.messages) from exc
 
 
 def _upload(request, application):

@@ -6,6 +6,7 @@ sections and document list. Safe to run more than once: existing rows are kept.
 
 from datetime import date
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -67,6 +68,7 @@ class Command(BaseCommand):
                 "allow_pdf": allow_pdf, "allow_image": allow_image, "order": order,
             })
 
+        call_command("seed_fee_placeholders", stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS(
             f"Placeholder data ready: sessions {current} (current) and {upcoming} (admissions open), "
             f"{len(CLASSES)} classes with section A, {len(DOCUMENTS)} document types."

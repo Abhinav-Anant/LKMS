@@ -9,6 +9,7 @@ School management system for Lotus Kids School, Rajasthan.
 - `whatsapp-server/` – WhatsApp messaging service (server part of Blastup), wired in Phase 4
 - `docs/LKMS_PLAN.md` – build plan and phase breakdown
 - `docs/ADMISSIONS.md` – how the admission workflow and its API work
+- `docs/FEES.md` – fee setup, invoices, receipts, Cashfree payments, reconciliation
 
 ## Running the backend locally (Windows, PowerShell)
 
@@ -20,7 +21,7 @@ cd backend
 copy .env.example .env                # then edit if needed
 uv sync
 uv run python manage.py migrate
-uv run python manage.py seed_lkms_defaults   # placeholder classes, sections, documents
+uv run python manage.py seed_lkms_defaults   # placeholder classes, sections, documents, fees
 uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
@@ -42,14 +43,15 @@ npm install
 npm run dev          # http://localhost:8080
 ```
 
-- Parents: `/apply` to fill in the admission form, `/track` to check status and upload documents.
+- Parents: `/apply` to fill in the admission form, `/track` to check status and upload documents, `/pay/...` links to pay fees.
 - Staff: `/staff/login` with a user created in the Django admin (set its role, e.g. office or principal).
 - Checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 
 ## Placeholders to replace with the school's real setup
 
 `seed_lkms_defaults` creates sample data only: classes Nursery to Class 8 with section A,
-sessions starting 1 April, age limits for Nursery/LKG/UKG, and a sample document list.
+sessions starting 1 April, age limits for Nursery/LKG/UKG, a sample document list, and sample
+fee heads, quarterly installments and amounts (change them in Fees → Fee setup).
 Change these in the admin once the school confirms its classes, sections, documents
 and admission number format (School profile → admission number prefix, width and next number).
 

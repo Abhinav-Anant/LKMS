@@ -4,11 +4,13 @@ import { Link, useParams } from "react-router-dom";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api, fetchFileUrl } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { CATEGORIES, ENROLLMENT_STATUS_LABELS, GENDERS, RELATIONSHIPS, STUDENT_STATUS_LABELS, formatDate } from "@/lib/labels";
 import type { StudentDetail as Detail } from "@/lib/types";
 
 export default function StudentDetail() {
   const { id } = useParams();
+  const { can } = useAuth();
   const student = useQuery({ queryKey: ["student", id], queryFn: () => api.get<Detail>(`/students/${id}/`) });
 
   if (student.isLoading) return <p className="text-muted-foreground">Loading…</p>;
@@ -31,6 +33,11 @@ export default function StudentDetail() {
             {s.admitted_in_class_name && ` in ${s.admitted_in_class_name}`}
           </p>
           <p className="text-sm">{STUDENT_STATUS_LABELS[s.status] ?? s.status}</p>
+          {can("fees.view") && (
+            <Link to={`/staff/fees?student=${s.id}`} className="mr-4 text-sm text-primary underline-offset-4 hover:underline">
+              Fees
+            </Link>
+          )}
           {s.application && (
             <Link to={`/staff/applications/${s.application}`} className="text-sm text-primary underline-offset-4 hover:underline">
               View admission application
