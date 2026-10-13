@@ -6,7 +6,8 @@ After=network-online.target postgresql.service
 [Service]
 Type=oneshot
 User=lkms
+Group=lkms
+UMask=0077
 WorkingDirectory=/srv/lkms/backend
-EnvironmentFile=/srv/lkms/backend/.env
 ExecStart=/srv/lkms/backend/.venv/bin/python manage.py backup
 Nice=10

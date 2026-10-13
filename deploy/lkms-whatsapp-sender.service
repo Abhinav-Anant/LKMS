@@ -1,0 +1,16 @@
+# Sends queued WhatsApp messages through the Blastup server. See docs/WHATSAPP.md.
+[Unit]
+Description=LKMS WhatsApp sender
+After=network-online.target postgresql.service docker.service
+
+[Service]
+User=lkms
+Group=lkms
+WorkingDirectory=/srv/lkms/backend
+ExecStart=/srv/lkms/backend/.venv/bin/python manage.py send_whatsapp --loop
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

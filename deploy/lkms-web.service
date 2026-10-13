@@ -1,0 +1,22 @@
+# The LKMS website and API (Django under Gunicorn), behind Nginx. See docs/DEPLOY.md.
+[Unit]
+Description=LKMS web (Gunicorn)
+After=network-online.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+User=lkms
+Group=lkms
+WorkingDirectory=/srv/lkms/backend
+ExecStart=/srv/lkms/backend/.venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8001 --workers 3 --timeout 60 \
+    --access-logfile - --error-logfile -
+Restart=on-failure
+RestartSec=5
+# Uploaded documents are written with owner-only permissions.
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

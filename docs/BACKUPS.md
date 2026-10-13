@@ -39,6 +39,9 @@ With the defaults about 30 backups are kept at any time (14 + 8 + 12, minus over
 
 ## Commands
 
+On the server set up with `DEPLOY.md`, run these from `/srv/lkms/backend` as
+`sudo -u lkms .venv/bin/python manage.py ...` instead of `uv run python manage.py ...`.
+
 ```bash
 cd backend
 uv run python manage.py backup                 # take a backup now, copy it off-site, delete old ones
@@ -102,7 +105,7 @@ If the copy fails, the backup is still kept on the server and the command exits 
 Use this after a mistake (data deleted or changed wrongly) or to move to a new server.
 
 1. Stop the website and the WhatsApp worker so nobody changes data during the restore:
-   `sudo systemctl stop lkms-gunicorn lkms-whatsapp` (use your service names).
+   `sudo systemctl stop lkms-web lkms-whatsapp-sender`.
 2. Check the backup: `uv run python manage.py restore_backup /path/lkms-....tar --check`
 3. Restore: `uv run python manage.py restore_backup /path/lkms-....tar`, then type `restore`.
    Before changing anything it takes a backup of the current state, named `...-before-restore.tar`, so a restore can
