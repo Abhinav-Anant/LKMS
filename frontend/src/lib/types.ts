@@ -538,6 +538,8 @@ export interface Notice {
   sections: number[];
   section_labels: string[];
   is_published: boolean;
+  send_whatsapp: boolean;
+  whatsapp_queued_at: string | null;
   published_at: string | null;
   created_by: number | null;
   created_by_name: string | null;
@@ -646,4 +648,48 @@ export interface ParentNotice {
   title: string;
   body: string;
   published_at: string | null;
+}
+
+// Phase 4: WhatsApp
+
+export interface WhatsAppStatus {
+  enabled: boolean;
+  reachable: boolean;
+  state: "off" | "unreachable" | "connected" | "connecting" | "disconnected" | "qr_ready" | "error";
+  phone: string | null;
+  error: string;
+  queued: number;
+  sent_24h: number;
+  failed_24h: number;
+  skipped_24h: number;
+  opted_out: number;
+  oldest_queued: string | null;
+  quiet_hours: string;
+  rate_per_minute: number;
+}
+
+export interface OutgoingMessage {
+  id: number;
+  event: string;
+  kind: "login" | "alert";
+  phone: string;
+  text: string;
+  status: "queued" | "sending" | "sent" | "failed" | "skipped";
+  status_label: string;
+  skip_reason: string;
+  attempts: number;
+  next_attempt_at: string;
+  last_error: string;
+  student: number | null;
+  student_name: string | null;
+  created_at: string;
+  sent_at: string | null;
+}
+
+export interface OptOut {
+  id: number;
+  phone: string;
+  note: string;
+  created_by_name: string | null;
+  created_at: string;
 }

@@ -160,6 +160,7 @@ export const api = {
   post: <T>(path: string, body?: unknown, extra: Partial<RequestOptions> = {}) =>
     request<T>(path, { method: "POST", body, ...extra }),
   patch: <T>(path: string, body: unknown) => request<T>(path, { method: "PATCH", body }),
+  put: <T>(path: string, body: unknown) => request<T>(path, { method: "PUT", body }),
   delete: (path: string) => request<void>(path, { method: "DELETE" }),
   refreshAccess,
 };

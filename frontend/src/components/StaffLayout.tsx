@@ -60,6 +60,11 @@ export function StaffLayout() {
                     Notices
                   </NavLink>
                 )}
+                {can("messaging.view") && (
+                  <NavLink to="/staff/whatsapp" className={navClass}>
+                    WhatsApp
+                  </NavLink>
+                )}
                 {can("academics.manage") && (
                   <NavLink to="/staff/setup" className={navClass}>
                     School setup

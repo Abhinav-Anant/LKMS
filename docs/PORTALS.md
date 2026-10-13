@@ -14,9 +14,8 @@ number appears under the one sign-in, so brothers and sisters show together.
 
 There are two ways to get a code:
 
-1. **The parent asks for one** on the sign-in page. The code is valid for 10 minutes. It is meant to go out on
-   WhatsApp, which arrives in Phase 4. **Until then the code is only written to the server log** (and hidden there
-   when `DJANGO_DEBUG` is off), so parents cannot actually receive it yet.
+1. **The parent asks for one** on the sign-in page. The code is valid for 10 minutes and is sent on WhatsApp
+   (see `WHATSAPP.md`). While WhatsApp is switched off it is only logged.
 2. **The school office issues one** from the student's page: **Parent sign-in code** under a parent's details.
    It is valid for 24 hours, is shown once and is recorded in the audit log. The parent opens the sign-in page,
    chooses *I already have a code from the school office*, and enters it. This works today.

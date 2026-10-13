@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { ErrorNote } from "@/components/Panel";
+import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useChildren } from "@/lib/parent";
 
@@ -30,6 +33,37 @@ export default function Children() {
           </li>
         ))}
       </ul>
+      <WhatsAppAlerts />
+    </div>
+  );
+}
+
+function WhatsAppAlerts() {
+  const queryClient = useQueryClient();
+  const pref = useQuery({ queryKey: ["parent-whatsapp"], queryFn: () => api.get<{ whatsapp_alerts: boolean }>("/parent/whatsapp/") });
+  const save = useMutation({
+    mutationFn: (on: boolean) => api.put<{ whatsapp_alerts: boolean }>("/parent/whatsapp/", { whatsapp_alerts: on }),
+    // The box changes at once (see onChange); put it back if saving fails.
+    onError: (_err, on) => queryClient.setQueryData(["parent-whatsapp"], { whatsapp_alerts: !on }),
+    onSuccess: (data) => queryClient.setQueryData(["parent-whatsapp"], data),
+  });
+  if (!pref.data) return null;
+  return (
+    <div className="space-y-1 rounded-lg border bg-background p-4">
+      <label className="flex items-start gap-3">
+        <input type="checkbox" className="mt-1 h-5 w-5 accent-primary" checked={pref.data.whatsapp_alerts}
+          onChange={(e) => {
+            queryClient.setQueryData(["parent-whatsapp"], { whatsapp_alerts: e.target.checked });
+            save.mutate(e.target.checked);
+          }} />
+        <span>
+          <span className="font-medium">WhatsApp messages from school</span>
+          <span className="block text-sm text-muted-foreground">
+            Fee reminders, receipts, absence alerts and important notices. Sign-in codes are always sent.
+          </span>
+        </span>
+      </label>
+      <ErrorNote error={save.error} />
     </div>
   );
 }

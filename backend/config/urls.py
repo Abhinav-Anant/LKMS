@@ -20,4 +20,5 @@ urlpatterns = [
     path("api/v1/notices/", include("notices.urls")),
     path("api/v1/parent/", include("portal.urls")),
     path("api/v1/reports/", include("portal.reports")),
+    path("api/v1/whatsapp/", include("messaging.urls")),
 ]

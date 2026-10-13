@@ -18,9 +18,12 @@ from academics.models import TimetableEntry
 from academics.serializers import TimetableEntrySerializer
 from assessments.models import Mark
 from attendance.models import AttendanceRecord
+from core import audit
 from fees import upi
 from fees.models import Invoice, Payment
 from fees.views import pdf_response
+from messaging.models import OptOut
+from messaging.serializers import AlertsPreferenceSerializer
 from notices.serializers import ParentNoticeSerializer
 from notices.views import parent_notices
 from users.parent_login import children_for_phone
@@ -155,3 +158,23 @@ def child_timetable(request, pk):
 def notices(request):
     sections = [e.section_id for c in my_children(request.user) if (e := c.current_enrollment())]
     return Response(ParentNoticeSerializer(parent_notices(sections)[:50], many=True).data)
+
+
+@extend_schema(methods=["GET"], responses=AlertsPreferenceSerializer)
+@extend_schema(methods=["PUT"], request=AlertsPreferenceSerializer, responses=AlertsPreferenceSerializer)
+@api_view(["GET", "PUT"])
+@permission_classes(PARENT)
+def whatsapp_alerts(request):
+    """Parents can turn WhatsApp alerts off and on. Sign-in codes they ask for are always sent."""
+    phone = request.user.phone
+    if request.method == "PUT":
+        data = AlertsPreferenceSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        if data.validated_data["whatsapp_alerts"]:
+            for opt_out in OptOut.objects.filter(phone=phone):
+                audit.record(request, "whatsapp.opted_in", opt_out)
+                opt_out.delete()
+        elif not OptOut.objects.filter(phone=phone).exists():
+            opt_out = OptOut.objects.create(phone=phone, note="Turned off by the parent in the portal", created_by=request.user)
+            audit.record(request, "whatsapp.opted_out", opt_out)
+    return Response({"whatsapp_alerts": not OptOut.objects.filter(phone=phone).exists()})

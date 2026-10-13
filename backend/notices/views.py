@@ -4,9 +4,12 @@ from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
+from academics.models import Enrollment
 from academics.scope import teacher_sections
 from core import audit
+from core.notify import notify
 from core.permissions import Can, has_capability
+from messaging.templates import student_phone
 
 from .models import Notice
 from .serializers import NoticeSerializer
@@ -50,6 +53,7 @@ class NoticeViewSet(viewsets.ModelViewSet):
         published = serializer.validated_data.get("is_published", True)
         notice = serializer.save(created_by=self.request.user, published_at=timezone.now() if published else None)
         audit.record(self.request, "notice.created", notice)
+        send_to_parents(notice)
 
     def perform_update(self, serializer):
         extra = {}
@@ -57,10 +61,30 @@ class NoticeViewSet(viewsets.ModelViewSet):
             extra["published_at"] = timezone.now()
         notice = serializer.save(**extra)
         audit.record(self.request, "notice.updated", notice)
+        send_to_parents(notice)
 
     def perform_destroy(self, instance):
         audit.record(self.request, "notice.deleted", instance)
         instance.delete()
+
+
+def send_to_parents(notice):
+    """Queue the notice on WhatsApp once, for parents of the chosen sections (or the whole school)."""
+    if not (notice.send_whatsapp and notice.is_published and notice.audience != Notice.Audience.STAFF):
+        return
+    if notice.whatsapp_queued_at:
+        return
+    enrollments = Enrollment.objects.filter(section__session__is_current=True, status=Enrollment.Status.ACTIVE)
+    sections = list(notice.sections.all())
+    if sections:
+        enrollments = enrollments.filter(section__in=sections)
+    phones = []
+    for e in enrollments.select_related("student"):
+        phone = student_phone(e.student)
+        if phone and phone not in phones:
+            phones.append(phone)
+    notify("notice.published", notice=notice, phones=phones)
+    Notice.objects.filter(pk=notice.pk).update(whatsapp_queued_at=timezone.now())
 
 
 def parent_notices(sections):

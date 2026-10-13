@@ -29,6 +29,7 @@ export default function Notices() {
   const choices = manager ? (all.data ?? []).map((s) => ({ id: s.id, label: sectionLabel(s) })) : mine.data ?? [];
   const [audience, setAudience] = useState(manager ? "everyone" : "parents");
   const [picked, setPicked] = useState<number[]>([]);
+  const [whatsapp, setWhatsapp] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   const create = useMutation({
@@ -36,6 +37,7 @@ export default function Notices() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["notices"] });
       setPicked([]);
+      setWhatsapp(false);
       setFieldErrors({});
       toast({ title: "Notice posted" });
     },
@@ -51,7 +53,13 @@ export default function Notices() {
     const form = e.currentTarget;
     const data = new FormData(form);
     create.mutate(
-      { title: data.get("title"), body: data.get("body"), audience, sections: audience === "staff" ? [] : picked },
+      {
+        title: data.get("title"),
+        body: data.get("body"),
+        audience,
+        sections: audience === "staff" ? [] : picked,
+        send_whatsapp: audience !== "staff" && whatsapp,
+      },
       { onSuccess: () => form.reset() },
     );
   }
@@ -93,7 +101,16 @@ export default function Notices() {
               {fieldErrors.sections && <p className="text-sm text-destructive">{fieldErrors.sections.join(" ")}</p>}
             </fieldset>
           )}
-          <p className="text-sm text-muted-foreground">Parents see notices in the parent portal. WhatsApp alerts come in a later phase.</p>
+          {audience !== "staff" && (
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" checked={whatsapp} onChange={(e) => setWhatsapp(e.target.checked)} />
+              <span>
+                Also send to parents on WhatsApp
+                <span className="block text-muted-foreground">One message per family. Use it for things parents must not miss.</span>
+              </span>
+            </label>
+          )}
+          <p className="text-sm text-muted-foreground">Parents always see notices in the parent portal.</p>
           <ErrorNote error={create.error} />
           <Button type="submit" disabled={create.isPending || (!manager && picked.length === 0)}>
             {create.isPending ? "Posting…" : "Post notice"}
@@ -114,6 +131,7 @@ export default function Notices() {
               <div className="flex flex-wrap gap-1">
                 <Badge variant="outline">{n.audience_label}</Badge>
                 {n.section_labels.map((l) => <Badge key={l} variant="secondary">{l}</Badge>)}
+                {n.whatsapp_queued_at && <Badge variant="secondary">WhatsApp</Badge>}
               </div>
             </div>
             <p className="whitespace-pre-line text-sm">{n.body}</p>

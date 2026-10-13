@@ -6,18 +6,19 @@ School management system for Lotus Kids School, Rajasthan.
 
 - `backend/` – Django + Django REST Framework API
 - `frontend/` – React + TypeScript + Vite UI: public admission form, tracking and fee payment; staff, teacher and parent portals
-- `whatsapp-server/` – WhatsApp messaging service (server part of Blastup), wired in Phase 4
+- `whatsapp-server/` – WhatsApp sender (server part of Blastup); Django talks to it on 127.0.0.1 with an API key
 - `docs/LKMS_PLAN.md` – build plan and phase breakdown
 - `docs/ADMISSIONS.md` – how the admission workflow and its API work
 - `docs/FEES.md` – fee setup, invoices, receipts, UPI QR payments and how staff verify them
 - `docs/PORTALS.md` – teacher, parent and admin portals: sign-in, attendance, marks, timetable, notices, users
+- `docs/WHATSAPP.md` – WhatsApp alerts: what is sent, safety limits, opt-outs and server setup
 
 ## Running the backend locally (Windows, PowerShell)
 
 Needs Python 3.12+, [uv](https://docs.astral.sh/uv/) and Docker Desktop.
 
 ```powershell
-docker compose up -d                  # PostgreSQL on localhost:5432
+docker compose up -d postgres         # PostgreSQL on localhost:5432
 cd backend
 copy .env.example .env                # then edit if needed
 uv sync

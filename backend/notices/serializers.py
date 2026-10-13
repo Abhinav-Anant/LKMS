@@ -17,9 +17,9 @@ class NoticeSerializer(serializers.ModelSerializer):
         model = Notice
         fields = [
             "id", "title", "body", "audience", "audience_label", "sections", "section_labels", "is_published",
-            "published_at", "created_by", "created_by_name", "created_at",
+            "send_whatsapp", "whatsapp_queued_at", "published_at", "created_by", "created_by_name", "created_at",
         ]
-        read_only_fields = ["published_at", "created_by", "created_at"]
+        read_only_fields = ["published_at", "whatsapp_queued_at", "created_by", "created_at"]
 
     def get_section_labels(self, obj) -> list[str]:
         return [f"{s.school_class.name} {s.name}" for s in obj.sections.all()]

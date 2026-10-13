@@ -31,6 +31,7 @@ import Login from "@/pages/staff/Login";
 import Notices from "@/pages/staff/Notices";
 import StudentDetail from "@/pages/staff/StudentDetail";
 import Students from "@/pages/staff/Students";
+import WhatsApp from "@/pages/staff/WhatsApp";
 import Attendance from "@/pages/staff/teaching/Attendance";
 import Marks from "@/pages/staff/teaching/Marks";
 import MarksEntry from "@/pages/staff/teaching/MarksEntry";
@@ -83,6 +84,7 @@ export default function App() {
               <Route path="setup" element={<Setup />} />
               <Route path="users" element={<Users />} />
               <Route path="password" element={<ChangePassword />} />
+              <Route path="whatsapp" element={<WhatsApp />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

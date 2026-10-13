@@ -120,6 +120,18 @@ export const WEEKDAYS: [number, string][] = [
   [6, "Saturday"],
 ];
 
+export const WHATSAPP_EVENT_LABELS: Record<string, string> = {
+  parent_login_code: "Parent sign-in code",
+  "fee.reminder": "Fee reminder",
+  "fee.payment_received": "Payment received",
+  "fee.upi_submitted": "UPI details received",
+  "fee.upi_rejected": "UPI payment not matched",
+  "admission.submitted": "Application received",
+  "admission.status_changed": "Application status",
+  "attendance.absent": "Absent today",
+  "notice.published": "Notice",
+};
+
 export const ROLE_LABELS: Record<string, string> = {
   admin: "Administrator",
   principal: "Principal",

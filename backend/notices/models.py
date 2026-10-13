@@ -18,6 +18,8 @@ class Notice(models.Model):
         help_text="Leave empty for the whole school; otherwise only parents of these sections see it",
     )
     is_published = models.BooleanField(default=True)
+    send_whatsapp = models.BooleanField(default=False, help_text="Also send to parents on WhatsApp when published")
+    whatsapp_queued_at = models.DateTimeField(null=True, blank=True, editable=False)
     published_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+")
     created_at = models.DateTimeField(auto_now_add=True)

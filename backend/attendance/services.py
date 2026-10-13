@@ -5,6 +5,8 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from academics.models import Enrollment
 from academics.scope import can_take_attendance, sees_all
 from core import audit
+from core.notify import notify
+from students.models import Student
 
 from .models import AttendanceRecord
 
@@ -53,8 +55,11 @@ def mark(request, section, day, rows):
         raise ValidationError({"records": f"These students are not in this section: {unknown}"})
     existing = {r.student_id: r for r in AttendanceRecord.objects.filter(student_id__in=allowed, date=day)}
     changed = 0
+    newly_absent = []
     for row in rows:
         record = existing.get(row["student"])
+        if row["status"] == AttendanceRecord.Status.ABSENT and (record is None or record.status != AttendanceRecord.Status.ABSENT):
+            newly_absent.append(row["student"])
         if record is None:
             AttendanceRecord.objects.create(
                 student_id=row["student"], section=section, date=day, status=row["status"],
@@ -66,5 +71,9 @@ def mark(request, section, day, rows):
             record.save()
             changed += 1
     audit.record(request, "attendance.marked", section, date=day.isoformat(), changed=changed, rows=len(rows))
+    # Tell parents the same day only; corrections to earlier days stay quiet.
+    if day == timezone.localdate():
+        for student in Student.objects.filter(pk__in=newly_absent):
+            notify("attendance.absent", student=student, date=day)
     return changed
 

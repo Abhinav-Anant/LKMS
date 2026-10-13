@@ -1,5 +1,8 @@
-# Local development services. The Django app runs on your machine and talks to these.
-#   docker compose up -d
+# Services the Django app talks to.
+#   docker compose up -d postgres                 # development: database only
+#   docker compose up -d                          # also the WhatsApp server (needs whatsapp-server/.env)
+#
+# Every port is bound to 127.0.0.1, so nothing here is reachable from the internet.
 services:
   postgres:
     image: postgres:16
@@ -17,5 +20,35 @@ services:
       interval: 10s
       retries: 5
 
+  # WhatsApp sender (Blastup server). Only Django calls it, with WHATSAPP_API_KEY.
+  whatsapp:
+    build:
+      context: ./whatsapp-server/server
+      dockerfile: ../Dockerfile.server
+    restart: unless-stopped
+    env_file: ./whatsapp-server/.env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/whatsapp
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:3001:3001"
+    volumes:
+      - wa_sessions:/app/sessions
+    depends_on:
+      - mongo
+      - redis
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongodata:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  mongodata:
+  wa_sessions:

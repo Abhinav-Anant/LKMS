@@ -26,6 +26,9 @@ CAPABILITIES = {
     "notices.manage": {"admin", "principal", "office"},
     "users.manage": {"admin", "principal"},
     "reports.view": {"admin", "principal"},
+    # Phase 4: WhatsApp
+    "messaging.view": {"admin", "principal", "office"},
+    "messaging.manage": {"admin", "principal"},
 }
 
 

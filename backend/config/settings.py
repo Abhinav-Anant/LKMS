@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "assessments",
     "notices",
     "portal",
+    "messaging",
 ]
 
 MIDDLEWARE = [
@@ -191,6 +192,19 @@ SPECTACULAR_SETTINGS = {
         "AttendanceStatusEnum": "attendance.models.AttendanceRecord.Status",
     },
 }
+
+# WhatsApp (Phase 4): messages go through the Blastup server in whatsapp-server/, on this machine only.
+WHATSAPP_ENABLED = env_bool("WHATSAPP_ENABLED", False)
+WHATSAPP_API_URL = os.getenv("WHATSAPP_API_URL", "http://127.0.0.1:3001")
+WHATSAPP_API_KEY = os.getenv("WHATSAPP_API_KEY", "")
+WHATSAPP_TIMEOUT_SECONDS = int(os.getenv("WHATSAPP_TIMEOUT_SECONDS", "15"))
+# Unofficial WhatsApp Web: send slowly so the school's number is not blocked.
+WHATSAPP_RATE_PER_MINUTE = int(os.getenv("WHATSAPP_RATE_PER_MINUTE", "8"))
+WHATSAPP_SEND_GAP_SECONDS = float(os.getenv("WHATSAPP_SEND_GAP_SECONDS", "4"))
+WHATSAPP_DAILY_LIMIT_PER_NUMBER = int(os.getenv("WHATSAPP_DAILY_LIMIT_PER_NUMBER", "6"))
+WHATSAPP_MAX_ATTEMPTS = int(os.getenv("WHATSAPP_MAX_ATTEMPTS", "5"))
+# No alerts from 21:00 to 07:00 (sign-in codes still go).
+WHATSAPP_QUIET_HOURS = tuple(int(h) for h in os.getenv("WHATSAPP_QUIET_HOURS", "21,7").split(","))
 
 # Production hardening (only applies when DEBUG is off)
 if not DEBUG:
