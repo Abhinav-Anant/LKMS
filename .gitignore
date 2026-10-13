@@ -19,6 +19,7 @@ dist/
 media/
 staticfiles/
 uploads/
+private_media/
 sessions/
 logs/
 

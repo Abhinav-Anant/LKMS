@@ -4,14 +4,41 @@ School management system for Lotus Kids School, Rajasthan.
 
 ## Layout
 
-- `backend/` – Django + Django REST Framework API (from acharya)
-- `frontend/` – React + TypeScript + Vite UI (from acharya)
-- `whatsapp-server/` – WhatsApp messaging service (server part of Blastup)
+- `backend/` – Django + Django REST Framework API
+- `frontend/` – React + TypeScript + Vite UI (still the acharya screens; being rebuilt against the new API)
+- `whatsapp-server/` – WhatsApp messaging service (server part of Blastup), wired in Phase 4
 - `docs/LKMS_PLAN.md` – build plan and phase breakdown
+- `docs/ADMISSIONS.md` – how the admission workflow and its API work
+
+## Running the backend locally (Windows, PowerShell)
+
+Needs Python 3.12+, [uv](https://docs.astral.sh/uv/) and Docker Desktop.
+
+```powershell
+docker compose up -d                  # PostgreSQL on localhost:5432
+cd backend
+copy .env.example .env                # then edit if needed
+uv sync
+uv run python manage.py migrate
+uv run python manage.py seed_lkms_defaults   # placeholder classes, sections, documents
+uv run python manage.py createsuperuser
+uv run python manage.py runserver
+```
+
+- API docs: http://localhost:8000/api/docs/
+- Admin: http://localhost:8000/admin/
+- Tests: `uv run pytest`
+
+Without Docker, leave `DATABASE_URL` empty in `.env` and SQLite is used (development only).
+
+## Placeholders to replace with the school's real setup
+
+`seed_lkms_defaults` creates sample data only: classes Nursery to Class 8 with section A,
+sessions starting 1 April, age limits for Nursery/LKG/UKG, and a sample document list.
+Change these in the admin once the school confirms its classes, sections, documents
+and admission number format (School profile → admission number prefix, width and next number).
 
 ## Sources
 
 - Base: [frankmathewsajan/acharya](https://github.com/frankmathewsajan/acharya) at commit `89409789dc3fd2fea8e378c632bed81f2cc40598`, used with the author's permission. Original README in `docs/ACHARYA_README.md`.
 - WhatsApp server: [kalpintelligence/Blastup](https://github.com/kalpintelligence/Blastup) at commit `7a6df66cee12241f8d9f909392d37728942e84b2`, MIT licence (see `whatsapp-server/LICENSE`).
-
-Removed on import: committed `node_modules/`, `backend/db.sqlite3` and `frontend/.env`.
