@@ -19,6 +19,10 @@ from academics.serializers import TimetableEntrySerializer
 from assessments.models import Mark
 from attendance.models import AttendanceRecord
 from core import audit
+from exams import report as exam_report
+from exams.models import ExamTerm
+from exams.pdf import report_cards_pdf
+from exams.views import PDF, pdf_download
 from fees import upi
 from fees.models import Invoice, Payment
 from fees.views import pdf_response
@@ -35,6 +39,7 @@ from .serializers import (
     ParentInvoiceSerializer,
     ParentMarkSerializer,
     ParentPaymentSerializer,
+    ParentReportCardSerializer,
 )
 
 
@@ -137,6 +142,34 @@ def child_marks(request, pk):
         "date": m.assessment.date, "max_marks": m.assessment.max_marks, "marks": m.marks, "is_absent": m.is_absent,
         "remark": m.remark,
     } for m in marks.order_by("-assessment__date", "assessment__subject__order")], many=True).data)
+
+
+@extend_schema(responses=ParentReportCardSerializer(many=True))
+@api_view(["GET"])
+@permission_classes(PARENT)
+def child_report_cards(request, pk):
+    """Published report cards of a child, newest first."""
+    child = my_child(request.user, pk)
+    terms = ExamTerm.objects.filter(is_published=True, session__enrollments__student=child,
+                                    assessments__section__enrollments__student=child).distinct().select_related("session")
+    return Response(ParentReportCardSerializer([
+        {"term": t.pk, "name": t.name, "session": t.session.name, "published_at": t.published_at} for t in terms
+    ], many=True).data)
+
+
+@extend_schema(responses=PDF)
+@api_view(["GET"])
+@permission_classes(PARENT)
+def child_report_card(request, pk, term_id):
+    child = my_child(request.user, pk)
+    term = get_object_or_404(ExamTerm, pk=term_id, is_published=True)
+    e = exam_report.enrollment_for(term, child)
+    if e is None:
+        raise NotFound("No report card for this term.")
+    cards = exam_report.build(term, e.section, students=[child])
+    if not cards:
+        raise NotFound("No report card for this term.")
+    return pdf_download(report_cards_pdf(term, cards), f"report-card-{child.admission_number}-{term.name}.pdf".replace(" ", "-"))
 
 
 @extend_schema(responses=TimetableEntrySerializer(many=True))

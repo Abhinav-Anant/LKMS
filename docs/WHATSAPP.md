@@ -17,6 +17,8 @@ respects opt-outs and keeps a full send log.
 | Admission application received / status changes | the contact on the application | status, message, tracking link |
 | Child marked absent **today** | main contact | absence alert (once a day per child; back-dated corrections send nothing) |
 | Notice posted with **Also send to parents on WhatsApp** ticked | one message per family in the chosen classes | the notice |
+| Report cards of a term published (Phase 5) | main contact of each student | "the report card is ready", portal link (once per term) |
+| Transfer certificate issued (Phase 5) | main contact | TC number, collect it from the office |
 
 The wording of every message is in `backend/messaging/templates.py`.
 

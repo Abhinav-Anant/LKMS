@@ -40,6 +40,11 @@ export function StaffLayout() {
                     My classes
                   </NavLink>
                 )}
+                {can("marks.view") && (
+                  <NavLink to="/staff/exams" className={navClass}>
+                    Exams
+                  </NavLink>
+                )}
                 {can("admissions.view") && (
                   <NavLink to="/staff/applications" className={navClass}>
                     Admissions
@@ -53,6 +58,16 @@ export function StaffLayout() {
                 {can("fees.view") && (
                   <NavLink to="/staff/fees" className={navClass}>
                     Fees
+                  </NavLink>
+                )}
+                {can("tc.view") && (
+                  <NavLink to="/staff/certificates" className={navClass}>
+                    TCs
+                  </NavLink>
+                )}
+                {can("reports.view") && (
+                  <NavLink to="/staff/reports" className={navClass}>
+                    Reports
                   </NavLink>
                 )}
                 {can("notices.post") && (

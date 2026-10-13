@@ -505,6 +505,8 @@ export interface Assessment {
   section_label: string;
   subject: number;
   subject_name: string;
+  term: number | null;
+  term_name: string | null;
   name: string;
   date: string;
   max_marks: string;
@@ -587,6 +589,7 @@ export interface Dashboard {
   };
   fees: { billed: string; collected: string; outstanding: string; collected_this_month: string; overdue_invoices: number };
   pending: { admissions: number; upi_payments: number; concessions: number };
+  backups: { healthy: boolean; latest_at: string | null; max_age_hours: number };
 }
 
 export interface IssuedCode {
@@ -692,4 +695,109 @@ export interface OptOut {
   note: string;
   created_by_name: string | null;
   created_at: string;
+}
+
+export interface ExamTerm {
+  id: number;
+  session: number;
+  session_name: string;
+  name: string;
+  order: number;
+  start_date: string;
+  end_date: string;
+  is_published: boolean;
+  published_at: string | null;
+  assessments: number;
+  unpublished_assessments: number;
+}
+
+export interface GradeBand {
+  id: number;
+  grade: string;
+  min_percent: string;
+  description: string;
+  is_pass: boolean;
+}
+
+export interface ResultRow {
+  student: number;
+  roll_number: number | null;
+  name: string;
+  admission_number: string;
+  subjects: { subject: string; percent: string | null; grade: string }[];
+  obtained: string;
+  maximum: string;
+  percent: string | null;
+  grade: string;
+  result: string;
+  attendance_present: number;
+  attendance_marked: number;
+  remark: string;
+  co_scholastic: Record<string, string>;
+}
+
+export interface ResultSheet {
+  term: ExamTerm;
+  section: number;
+  section_label: string;
+  can_edit_remarks: boolean;
+  co_scholastic_areas: string[];
+  co_scholastic_grades: string[];
+  rows: ResultRow[];
+}
+
+export interface ParentReportCard {
+  term: number;
+  name: string;
+  session: string;
+  published_at: string;
+}
+
+export type TcStatus = "requested" | "issued" | "cancelled";
+
+export interface TransferCertificate {
+  id: number;
+  student: number;
+  student_name: string;
+  admission_number: string;
+  class_label: string;
+  status: TcStatus;
+  number: string | null;
+  application_date: string;
+  leaving_date: string;
+  reason: string;
+  last_exam_result: string;
+  conduct: string;
+  remarks: string;
+  fees_due: string;
+  current_fees_due: string;
+  dues_waived_reason: string;
+  requested_at: string;
+  issued_on: string | null;
+  issued_by_name: string;
+  cancelled_at: string | null;
+  cancel_reason: string;
+}
+
+export interface ReportInfo {
+  name: string;
+  title: string;
+  params: ("session" | "month" | "term")[];
+}
+
+export interface ReportTable {
+  name: string;
+  title: string;
+  columns: { key: string; label: string }[];
+  rows: Record<string, string | number | null>[];
+}
+
+export interface BackupStatus {
+  directory: string;
+  latest_at: string | null;
+  healthy: boolean;
+  max_age_hours: number;
+  offsite_copy: boolean;
+  retention: { daily: number; weekly: number; monthly: number };
+  backups: { name: string; size: number; taken_at: string }[];
 }

@@ -1,0 +1,12 @@
+# Nightly LKMS backup. Install with the timer: see docs/BACKUPS.md.
+[Unit]
+Description=LKMS database and uploaded-files backup
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+User=lkms
+WorkingDirectory=/srv/lkms/backend
+EnvironmentFile=/srv/lkms/backend/.env
+ExecStart=/srv/lkms/backend/.venv/bin/python manage.py backup
+Nice=10

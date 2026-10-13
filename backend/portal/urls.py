@@ -9,6 +9,8 @@ urlpatterns = [
     path("children/<int:pk>/receipts/<int:payment_id>/", views.child_receipt, name="parent-child-receipt"),
     path("children/<int:pk>/marks/", views.child_marks, name="parent-child-marks"),
     path("children/<int:pk>/timetable/", views.child_timetable, name="parent-child-timetable"),
+    path("children/<int:pk>/report-cards/", views.child_report_cards, name="parent-child-report-cards"),
+    path("children/<int:pk>/report-cards/<int:term_id>/", views.child_report_card, name="parent-child-report-card"),
     path("notices/", views.notices, name="parent-notices"),
     path("whatsapp/", views.whatsapp_alerts, name="parent-whatsapp"),
 ]

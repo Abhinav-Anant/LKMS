@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     "notices",
     "portal",
     "messaging",
+    "exams",
+    "certificates",
 ]
 
 MIDDLEWARE = [
@@ -129,6 +131,15 @@ PRIVATE_MEDIA_ROOT = Path(os.getenv("PRIVATE_MEDIA_ROOT", BASE_DIR / "private_me
 MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", "5"))
 DATA_UPLOAD_MAX_MEMORY_SIZE = (MAX_UPLOAD_SIZE_MB + 1) * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2_621_440
+
+# Backups (python manage.py backup / restore_backup). See docs/BACKUPS.md.
+BACKUP_DIR = Path(os.getenv("BACKUP_DIR", BASE_DIR / "backups"))
+BACKUP_KEEP_DAILY = int(os.getenv("BACKUP_KEEP_DAILY", "14"))
+BACKUP_KEEP_WEEKLY = int(os.getenv("BACKUP_KEEP_WEEKLY", "8"))
+BACKUP_KEEP_MONTHLY = int(os.getenv("BACKUP_KEEP_MONTHLY", "12"))
+# Optional command to copy each new backup off the server, e.g. "rclone copy {file} offsite:lkms-backups"
+BACKUP_COPY_COMMAND = os.getenv("BACKUP_COPY_COMMAND", "")
+BACKUP_MAX_AGE_HOURS = int(os.getenv("BACKUP_MAX_AGE_HOURS", "36"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -68,3 +68,10 @@ class ParentMarkSerializer(serializers.Serializer):
     marks = serializers.DecimalField(max_digits=6, decimal_places=2, allow_null=True)
     is_absent = serializers.BooleanField()
     remark = serializers.CharField(allow_blank=True)
+
+
+class ParentReportCardSerializer(serializers.Serializer):
+    term = serializers.IntegerField()
+    name = serializers.CharField()
+    session = serializers.CharField()
+    published_at = serializers.DateTimeField()

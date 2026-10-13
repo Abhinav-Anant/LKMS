@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { ErrorNote, Panel } from "@/components/Panel";
 import { api } from "@/lib/api";
-import { formatDate, formatMoney } from "@/lib/labels";
+import { formatDate, formatDateTime, formatMoney } from "@/lib/labels";
 import type { Dashboard as DashboardData } from "@/lib/types";
 
 function Stat({ label, value, to }: { label: string; value: string | number; to?: string }) {
@@ -30,6 +30,14 @@ export default function Dashboard() {
       {d && (
         <>
           <p className="text-sm text-muted-foreground">Session {d.session ?? "not set"} · {formatDate(d.date)}</p>
+          {!d.backups.healthy && (
+            <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+              {d.backups.latest_at
+                ? `The last backup was taken ${formatDateTime(d.backups.latest_at)}, more than ${d.backups.max_age_hours} hours ago.`
+                : "No backup has been taken yet."}{" "}
+              Check that the nightly backup is running on the server (see docs/BACKUPS.md).
+            </p>
+          )}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Students studying" value={d.students_total} to="/staff/students" />
             <Stat label="Present today" value={d.attendance_today.present} />

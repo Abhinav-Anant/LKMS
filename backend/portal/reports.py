@@ -17,6 +17,8 @@ from attendance.models import AttendanceRecord
 from core.permissions import Can
 from fees.models import Concession, Invoice, Payment, UpiSubmission
 
+from . import tables
+
 
 class DashboardSerializer(serializers.Serializer):
     session = serializers.CharField(allow_null=True)
@@ -26,6 +28,14 @@ class DashboardSerializer(serializers.Serializer):
     attendance_today = serializers.DictField()
     fees = serializers.DictField()
     pending = serializers.DictField()
+    backups = serializers.DictField()
+
+
+def _backups():
+    from core import backup
+
+    info = backup.status()
+    return {"healthy": info["healthy"], "latest_at": info["latest_at"], "max_age_hours": info["max_age_hours"]}
 
 
 @extend_schema(responses=DashboardSerializer)
@@ -74,6 +84,7 @@ def dashboard(request):
             "collected_this_month": str(month_collected),
             "overdue_invoices": invoices.filter(due_date__lt=today, status__in=[Invoice.Status.UNPAID, Invoice.Status.PARTLY_PAID]).count(),
         },
+        "backups": _backups(),
         "pending": {
             "admissions": AdmissionApplication.objects.filter(status__in=AdmissionApplication.OPEN_STATUSES).count(),
             "upi_payments": UpiSubmission.objects.filter(status=UpiSubmission.Status.PENDING).count(),
@@ -82,4 +93,4 @@ def dashboard(request):
     })
 
 
-urlpatterns = [path("dashboard/", dashboard, name="reports-dashboard")]
+urlpatterns = [path("dashboard/", dashboard, name="reports-dashboard")] + tables.urlpatterns

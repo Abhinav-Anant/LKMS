@@ -13,6 +13,8 @@ from django.db import transaction
 from academics.models import AcademicSession, PeriodSlot, SchoolClass, Section, Subject
 from admissions.models import DocumentType
 from core.models import SchoolProfile
+from exams.grading import DEFAULT_BANDS
+from exams.models import GradeBand
 
 CLASSES = [
     # name, code, min age, max age (on the session's cut-off date)
@@ -81,6 +83,10 @@ class Command(BaseCommand):
             Subject.objects.get_or_create(name=name, defaults={"code": name.lower().replace(" ", "-")[:20], "order": order})
         for number, begins, ends in PERIODS:
             PeriodSlot.objects.get_or_create(number=number, defaults={"start_time": begins, "end_time": ends})
+
+        if not GradeBand.objects.exists():
+            for grade, minimum, description, is_pass in DEFAULT_BANDS:
+                GradeBand.objects.create(grade=grade, min_percent=minimum, description=description, is_pass=is_pass)
 
         call_command("seed_fee_placeholders", stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS(

@@ -8,6 +8,10 @@ class Assessment(models.Model):
 
     section = models.ForeignKey("academics.Section", on_delete=models.PROTECT, related_name="assessments")
     subject = models.ForeignKey("academics.Subject", on_delete=models.PROTECT, related_name="assessments")
+    term = models.ForeignKey(
+        "exams.ExamTerm", null=True, blank=True, on_delete=models.PROTECT, related_name="assessments",
+        help_text="The report card this test counts towards",
+    )
     name = models.CharField(max_length=80, help_text="e.g. Unit Test 1, Half-yearly")
     date = models.DateField()
     max_marks = models.DecimalField(max_digits=6, decimal_places=2, validators=[MinValueValidator(1)])

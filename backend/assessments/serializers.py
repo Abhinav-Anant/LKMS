@@ -8,12 +8,13 @@ from .models import Assessment
 class AssessmentSerializer(serializers.ModelSerializer):
     section_label = serializers.SerializerMethodField()
     subject_name = serializers.CharField(source="subject.name", read_only=True)
+    term_name = serializers.CharField(source="term.name", read_only=True, default=None)
     marks_entered = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         model = Assessment
         fields = [
-            "id", "section", "section_label", "subject", "subject_name", "name", "date", "max_marks",
+            "id", "section", "section_label", "subject", "subject_name", "term", "term_name", "name", "date", "max_marks",
             "is_published", "published_at", "marks_entered",
         ]
         read_only_fields = ["is_published", "published_at"]
@@ -26,6 +27,9 @@ class AssessmentSerializer(serializers.ModelSerializer):
         subject = attrs.get("subject", getattr(self.instance, "subject", None))
         if not can_enter_marks(self.context["request"].user, section, subject):
             raise serializers.ValidationError("You do not teach this subject in this section.")
+        term = attrs.get("term", getattr(self.instance, "term", None))
+        if term and section and term.session_id != section.session_id:
+            raise serializers.ValidationError({"term": "This term belongs to a different session."})
         if self.instance and ("section" in attrs or "subject" in attrs) and self.instance.marks.exists():
             if attrs.get("section", section) != self.instance.section or attrs.get("subject", subject) != self.instance.subject:
                 raise serializers.ValidationError("Section and subject cannot change once marks are entered.")

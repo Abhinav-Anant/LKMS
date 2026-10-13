@@ -21,4 +21,7 @@ urlpatterns = [
     path("api/v1/parent/", include("portal.urls")),
     path("api/v1/reports/", include("portal.reports")),
     path("api/v1/whatsapp/", include("messaging.urls")),
+    path("api/v1/exams/", include("exams.urls")),
+    path("api/v1/certificates/", include("certificates.urls")),
+    path("api/v1/backups/", include("core.backup_urls")),
 ]

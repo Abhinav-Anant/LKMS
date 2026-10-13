@@ -103,6 +103,24 @@ def notice_published(ctx):
     return [(phone, f"{_school()}: {notice.title}\n\n{body}{FOOTER}", None) for phone in ctx["phones"]]
 
 
+def report_card_published(ctx):
+    from .models import OutgoingMessage
+
+    s, term = ctx["student"], ctx["term"]
+    label = f"{term.name} {term.session.name}"
+    # Published, withdrawn for a correction, then published again: one message is enough.
+    if OutgoingMessage.objects.filter(event="report_card.published", student=s, text__contains=label).exists():
+        return []
+    return _about(s, f"the {label} report card of {s.full_name} is ready. "
+                     f"See it in the parent portal: {settings.FRONTEND_BASE_URL}/parent")
+
+
+def tc_issued(ctx):
+    tc = ctx["tc"]
+    return _about(tc.student, f"transfer certificate {tc.number} for {tc.student.full_name} has been issued. "
+                              "Please collect it from the school office.")
+
+
 BUILDERS = {
     "parent_login_code": parent_login_code,
     "fee.reminder": fee_reminder,
@@ -113,6 +131,8 @@ BUILDERS = {
     "admission.status_changed": admission_status_changed,
     "attendance.absent": attendance_absent,
     "notice.published": notice_published,
+    "report_card.published": report_card_published,
+    "tc.issued": tc_issued,
 }
 
 LOGIN_EVENTS = {"parent_login_code"}

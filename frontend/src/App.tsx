@@ -9,6 +9,10 @@ import NotFound from "@/pages/NotFound";
 import Apply from "@/pages/public/Apply";
 import Home from "@/pages/public/Home";
 import ChildDetail from "@/pages/parent/ChildDetail";
+import Certificates from "@/pages/staff/Certificates";
+import Exams from "@/pages/staff/exams/Exams";
+import Results from "@/pages/staff/exams/Results";
+import Reports from "@/pages/staff/Reports";
 import Children from "@/pages/parent/Children";
 import ParentLogin from "@/pages/parent/Login";
 import ParentNotices from "@/pages/parent/Notices";
@@ -85,6 +89,10 @@ export default function App() {
               <Route path="users" element={<Users />} />
               <Route path="password" element={<ChangePassword />} />
               <Route path="whatsapp" element={<WhatsApp />} />
+              <Route path="exams" element={<Exams />} />
+              <Route path="exams/:termId/sections/:sectionId" element={<Results />} />
+              <Route path="certificates" element={<Certificates />} />
+              <Route path="reports" element={<Reports />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

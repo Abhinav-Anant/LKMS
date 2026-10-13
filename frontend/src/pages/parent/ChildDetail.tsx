@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useChildren } from "@/lib/parent";
 import { ATTENDANCE_LABELS, formatDate, formatMoney, todayISO } from "@/lib/labels";
-import type { ChildAttendance, ChildFees, ChildMark, TimetableEntry } from "@/lib/types";
+import type { ChildAttendance, ChildFees, ChildMark, ParentReportCard, TimetableEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { openPdf } from "@/pages/staff/fees/receipt";
 
@@ -19,6 +19,7 @@ const TABS = [
   ["attendance", "Attendance"],
   ["fees", "Fees"],
   ["marks", "Marks"],
+  ["report-cards", "Report cards"],
   ["timetable", "Timetable"],
 ] as const;
 
@@ -51,6 +52,7 @@ export default function ChildDetail() {
       {tab === "attendance" && <AttendanceTab id={id!} />}
       {tab === "fees" && <FeesTab id={id!} />}
       {tab === "marks" && <MarksTab id={id!} />}
+      {tab === "report-cards" && <ReportCardsTab id={id!} />}
       {tab === "timetable" && <TimetableTab id={id!} />}
     </div>
   );
@@ -196,6 +198,34 @@ function TimetableTab({ id }: { id: string }) {
     <Panel title="Timetable">
       <ErrorNote error={data.error} />
       {data.data && <TimetableGrid entries={data.data} show="teacher" />}
+    </Panel>
+  );
+}
+
+function ReportCardsTab({ id }: { id: string }) {
+  const data = useQuery({
+    queryKey: ["parent-report-cards", id],
+    queryFn: () => api.get<ParentReportCard[]>(`/parent/children/${id}/report-cards/`),
+  });
+  const [error, setError] = useState<unknown>(null);
+  return (
+    <Panel title="Report cards">
+      <ErrorNote error={data.error ?? error} />
+      {data.data?.length === 0 && <p className="text-sm text-muted-foreground">No report cards have been published yet.</p>}
+      <ul className="divide-y">
+        {data.data?.map((r) => (
+          <li key={r.term} className="flex flex-wrap items-center justify-between gap-2 py-2">
+            <span>
+              <span className="font-medium">{r.name} {r.session}</span>
+              <span className="block text-sm text-muted-foreground">Published {formatDate(r.published_at)}</span>
+            </span>
+            <Button size="sm" variant="outline"
+              onClick={() => openPdf(`/parent/children/${id}/report-cards/${r.term}/`).catch(setError)}>
+              Open report card
+            </Button>
+          </li>
+        ))}
+      </ul>
     </Panel>
   );
 }

@@ -32,7 +32,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, ReadOrManage]
     view_capability = "marks.view"
     manage_capability = "marks.enter"
-    filterset_fields = ["section", "subject", "is_published", "section__session"]
+    filterset_fields = ["section", "subject", "term", "is_published", "section__session"]
     pagination_class = None
 
     queryset = Assessment.objects.none()
@@ -40,7 +40,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return Assessment.objects.none()
-        qs = Assessment.objects.select_related("section__school_class", "subject").annotate(
+        qs = Assessment.objects.select_related("section__school_class", "subject", "term").annotate(
             marks_entered=Count("marks", filter=Q(marks__marks__isnull=False) | Q(marks__is_absent=True))
         )
         user = self.request.user

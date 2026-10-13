@@ -29,6 +29,11 @@ CAPABILITIES = {
     # Phase 4: WhatsApp
     "messaging.view": {"admin", "principal", "office"},
     "messaging.manage": {"admin", "principal"},
+    # Phase 5: transfer certificates and backups
+    "tc.view": {"admin", "principal", "office"},
+    "tc.request": {"admin", "principal", "office"},
+    "tc.issue": {"admin", "principal"},
+    "backups.view": {"admin", "principal"},
 }
 
 

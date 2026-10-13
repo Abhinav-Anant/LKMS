@@ -12,6 +12,9 @@ School management system for Lotus Kids School, Rajasthan.
 - `docs/FEES.md` – fee setup, invoices, receipts, UPI QR payments and how staff verify them
 - `docs/PORTALS.md` – teacher, parent and admin portals: sign-in, attendance, marks, timetable, notices, users
 - `docs/WHATSAPP.md` – WhatsApp alerts: what is sent, safety limits, opt-outs and server setup
+- `docs/EXAMS.md` – exam terms, report cards, transfer certificates and school-wide reports
+- `docs/BACKUPS.md` – nightly backups, retention, off-site copies and how to restore
+- `docs/BOARD_CHECKS.md` – placeholder formats the school and the Rajasthan board still need to confirm
 
 ## Running the backend locally (Windows, PowerShell)
 

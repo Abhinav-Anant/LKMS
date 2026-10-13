@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatDate } from "@/lib/labels";
-import type { Assessment, MarkSheet } from "@/lib/types";
+import type { Assessment, ExamTerm, MarkSheet } from "@/lib/types";
 
 interface Row {
   marks: string;
@@ -48,6 +48,15 @@ export default function MarksEntry() {
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: key }),
   });
 
+  const terms = useQuery({ queryKey: ["exam-terms", "all"], queryFn: () => api.get<ExamTerm[]>("/exams/terms/") });
+  const setTerm = useMutation({
+    mutationFn: (term: number | null) => api.patch<Assessment>(`/assessments/${id}/`, { term }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: key });
+      toast({ title: "Report card updated" });
+    },
+  });
+
   const a = sheet.data?.assessment;
   const max = a ? Number(a.max_marks) : 0;
   const editable = Boolean(sheet.data?.can_edit);
@@ -73,6 +82,15 @@ export default function MarksEntry() {
             <p className="text-sm text-muted-foreground">
               {a.section_label} · {formatDate(a.date)} · out of {max}
             </p>
+            <label className="mt-1 flex items-center gap-2 text-sm">
+              Counts towards
+              <select className="h-9 rounded-md border border-input bg-background px-2" value={a.term ?? ""}
+                disabled={!editable || setTerm.isPending}
+                onChange={(e) => setTerm.mutate(e.target.value ? Number(e.target.value) : null)}>
+                <option value="">No report card</option>
+                {terms.data?.map((t) => <option key={t.id} value={t.id}>{t.name} {t.session_name}</option>)}
+              </select>
+            </label>
           </div>
           {a.is_published ? <Badge>Shown to parents</Badge> : <Badge variant="outline">Draft, parents cannot see it</Badge>}
         </div>
@@ -112,7 +130,7 @@ export default function MarksEntry() {
           </tbody>
         </table>
       </div>
-      <ErrorNote error={save.error ?? publish.error} />
+      <ErrorNote error={save.error ?? publish.error ?? setTerm.error} />
       <div className="flex flex-wrap gap-2">
         {editable && (
           <Button onClick={() => save.mutate()} disabled={save.isPending || over}>

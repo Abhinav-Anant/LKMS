@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatDate, todayISO } from "@/lib/labels";
-import type { Assessment, MySection, Subject } from "@/lib/types";
+import { useSessions } from "@/lib/academics";
+import type { Assessment, ExamTerm, MySection, Subject } from "@/lib/types";
 
 export default function Marks() {
   const { sectionId } = useParams();
@@ -26,6 +27,13 @@ export default function Marks() {
   const tests = useQuery({
     queryKey: ["assessments", sectionId],
     queryFn: () => api.get<Assessment[]>("/assessments/", { section: sectionId }),
+  });
+  const sessions = useSessions();
+  const currentSession = sessions.data?.find((s) => s.is_current)?.id;
+  const terms = useQuery({
+    queryKey: ["exam-terms", currentSession],
+    queryFn: () => api.get<ExamTerm[]>("/exams/terms/", { session: currentSession }),
+    enabled: Boolean(currentSession),
   });
   const section = sections.data?.find((s) => String(s.id) === sectionId);
   // Admin and principal may set a test in any subject; teachers in the subjects they teach here.
@@ -44,7 +52,9 @@ export default function Marks() {
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    create.mutate({ section: Number(sectionId), ...Object.fromEntries(form) });
+    const body: Record<string, unknown> = { section: Number(sectionId), ...Object.fromEntries(form) };
+    body.term = body.term ? Number(body.term) : null;
+    create.mutate(body);
   }
 
   return (
@@ -60,6 +70,7 @@ export default function Marks() {
             <Link to={`/staff/assessments/${t.id}`} className="flex flex-wrap items-center justify-between gap-2 p-3 hover:bg-accent">
               <span>
                 <span className="font-medium">{t.name}</span> · {t.subject_name}
+                {t.term_name && <span className="text-muted-foreground"> · {t.term_name}</span>}
                 <span className="block text-sm text-muted-foreground">
                   {formatDate(t.date)} · out of {Number(t.max_marks)} · {t.marks_entered} marks entered
                 </span>
@@ -81,6 +92,12 @@ export default function Marks() {
             </Field>
             <Field label="Test name" required hint="e.g. Unit Test 1, Half-yearly" error={fieldErrors.name}>
               <Input name="name" maxLength={80} />
+            </Field>
+            <Field label="Counts towards" hint="The report card this test appears on" error={fieldErrors.term}>
+              <NativeSelect name="term" defaultValue="">
+                <option value="">No report card</option>
+                {terms.data?.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </NativeSelect>
             </Field>
             <Field label="Date" required error={fieldErrors.date}>
               <Input name="date" type="date" defaultValue={todayISO()} />

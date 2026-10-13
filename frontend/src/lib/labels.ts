@@ -130,6 +130,14 @@ export const WHATSAPP_EVENT_LABELS: Record<string, string> = {
   "admission.status_changed": "Application status",
   "attendance.absent": "Absent today",
   "notice.published": "Notice",
+  "report_card.published": "Report card ready",
+  "tc.issued": "TC issued",
+};
+
+export const TC_STATUS_LABELS: Record<string, string> = {
+  requested: "Waiting for the principal",
+  issued: "Issued",
+  cancelled: "Cancelled",
 };
 
 export const ROLE_LABELS: Record<string, string> = {
