@@ -54,6 +54,12 @@ def test_parent_can_apply_and_gets_number_and_code(public, application_data):
     assert {d["code"] for d in created["required_documents"]} >= {"birth-certificate", "photo"}
 
 
+def test_form_filled_by_a_bot_is_refused(public, application_data):
+    response = public.post("/api/v1/admissions/public/apply/", {**application_data, "website": "http://spam.example"}, format="json")
+    assert response.status_code == 400
+    assert not AdmissionApplication.objects.exists()
+
+
 def test_application_numbers_are_sequential(public, application_data):
     first = apply(public, application_data)["application_number"]
     second = apply(public, application_data)["application_number"]

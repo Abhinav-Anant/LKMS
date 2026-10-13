@@ -1,47 +1,47 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
-import About from "./pages/About";
-import Help from "./pages/Help";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Admission from "./pages/Admission";
-import TrackingPage from "./pages/TrackingPage";
-import BlockchainMarks from "./pages/BlockchainMarks";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-const queryClient = new QueryClient();
+import { StaffHome, StaffLayout } from "@/components/StaffLayout";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/lib/auth";
+import NotFound from "@/pages/NotFound";
+import Apply from "@/pages/public/Apply";
+import Home from "@/pages/public/Home";
+import Track from "@/pages/public/Track";
+import ApplicationDetail from "@/pages/staff/ApplicationDetail";
+import Applications from "@/pages/staff/Applications";
+import Login from "@/pages/staff/Login";
+import StudentDetail from "@/pages/staff/StudentDetail";
+import Students from "@/pages/staff/Students";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true
-        }}>
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 },
+  },
+});
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <Toaster />
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admission" element={<Admission />} />
-            <Route path="/track" element={<TrackingPage />} />
-            <Route path="/blockchain-marks" element={<BlockchainMarks />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/" element={<Home />} />
+            <Route path="/apply" element={<Apply />} />
+            <Route path="/track" element={<Track />} />
+            <Route path="/staff/login" element={<Login />} />
+            <Route path="/staff" element={<StaffLayout />}>
+              <Route index element={<StaffHome />} />
+              <Route path="applications" element={<Applications />} />
+              <Route path="applications/:id" element={<ApplicationDetail />} />
+              <Route path="students" element={<Students />} />
+              <Route path="students/:id" element={<StudentDetail />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}

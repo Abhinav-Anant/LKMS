@@ -68,6 +68,9 @@ class PublicApplyView(APIView):
     serializer_class = ApplicationFormSerializer
 
     def post(self, request):
+        # "website" is a hidden field on the form. People never fill it in; spam bots do.
+        if request.data.get("website"):
+            return Response({"detail": "The application could not be submitted."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = ApplicationFormSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         with as_api_errors():

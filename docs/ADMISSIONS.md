@@ -52,9 +52,20 @@ Staff (JWT from `POST /api/v1/auth/login/`):
 
 Full, always-current reference: `/api/docs/` on a running server.
 
+## Screens
+
+| Path | Who | What |
+|---|---|---|
+| `/apply` | Parents | Admission form in steps, then document upload |
+| `/track` | Parents | Status by application number, date of birth and mobile; upload missing documents with the access code |
+| `/staff/applications` | Office, principal | Filter and open applications |
+| `/staff/applications/:id` | Office, principal | Verify documents, move status, approve or reject, admit into a section |
+| `/staff/students`, `/staff/students/:id` | Staff with student access | Student list and record with photo, guardians and class history |
+
+The public form has a hidden `website` field; the API refuses any submission that fills it in (spam bots).
+
 ## Not done yet
 
-- Screens: the React admission form, tracking page and office review screens (next step).
 - Parent OTP on the mobile number before submitting (needs the WhatsApp/SMS sender from Phase 4).
 - Printable admission register and admission form PDF.
 - MFA for administrators.
