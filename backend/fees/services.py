@@ -11,7 +11,7 @@ from core import audit
 from core.models import Counter
 from core.notify import notify
 
-from .models import Concession, FeeAmount, Invoice, InvoiceLine, Payment, PaymentIssue
+from .models import Concession, FeeAmount, Invoice, InvoiceLine, Payment
 
 ZERO = Decimal("0")
 PAISA = Decimal("0.01")
@@ -193,35 +193,26 @@ def cancel_invoice(request, invoice, reason):
 # ----- payments -----
 
 @transaction.atomic
-def record_payment(request, invoice, *, amount, mode, paid_on=None, reference="", online_order=None):
-    """Record money received against an invoice and issue a receipt number.
-
-    Offline payments may not exceed the balance. An online payment is money
-    already taken by Cashfree, so it is always recorded; any excess is flagged.
-    """
+def record_payment(request, invoice, *, amount, mode, paid_on=None, reference=""):
+    """Record money received against an invoice and issue a receipt number."""
     invoice = Invoice.objects.select_for_update().get(pk=invoice.pk)
     amount = _money(amount)
     if amount <= 0:
         raise ValidationError({"amount": "Amount must be more than zero."})
-    if invoice.status == Invoice.Status.CANCELLED and online_order is None:
+    if invoice.status == Invoice.Status.CANCELLED:
         raise ValidationError("This invoice is cancelled.")
     balance = invoice.balance
-    if online_order is None and amount > balance:
+    if amount > balance:
         raise ValidationError({"amount": f"Amount is more than the balance of Rs {balance}."})
 
     payment = Payment.objects.create(
         receipt_number=next_number("RCT", invoice.session), invoice=invoice, amount=amount, mode=mode,
-        reference=reference, paid_on=paid_on or timezone.localdate(), online_order=online_order,
+        reference=reference, paid_on=paid_on or timezone.localdate(),
         received_by=request.user if request is not None and request.user.is_authenticated else None,
     )
     invoice.amount_paid += amount
     invoice.refresh_status()
     invoice.save(update_fields=["amount_paid", "status", "updated_at"])
-    if online_order is not None and amount > balance:
-        PaymentIssue.objects.create(
-            kind=PaymentIssue.Kind.OVERPAID, order=online_order,
-            detail=f"Rs {amount} paid online against a balance of Rs {balance} on {invoice.number}.",
-        )
     audit.record(request, "fees.payment_recorded", payment, invoice=invoice.number, amount=str(amount), mode=mode)
     notify("fee.payment_received", student=invoice.student, amount=amount, receipt=payment.receipt_number)
     return payment

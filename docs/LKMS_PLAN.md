@@ -43,16 +43,11 @@ Reviewed 12 Oct 2026 from fresh clones of
 - **What we'd take:** the `server/` only (send text/image/document, session + QR, reminders, API keys). Django calls `POST /api/send/text` with an `x-api-key` header. We can keep the Next.js dashboard just for scanning the QR, or add a QR page to LKMS admin.
 - **Recommendation:** wrap it behind a small `messaging` module in Django with a queue, so switching to the official Meta Cloud API later (if bans become a problem) is one adapter, not a rewrite.
 
-## 4. Payments with Cashfree
+## 4. Payments
 
-1. Parent clicks Pay: Django creates a Cashfree order server-side (our `order_id`, amount, customer phone) and gets a `payment_session_id`.
-2. Frontend opens Cashfree Checkout with that session id (UPI, cards, netbanking, wallets as enabled on the account).
-3. Cashfree calls our webhook. Django verifies the signature (HMAC-SHA256 of timestamp + raw body with the secret key), then marks the invoice paid **only from the webhook or a server-side Get Order call**, never from the browser redirect.
-4. Idempotent on `order_id`; every webhook stored raw for audit.
-5. Nightly reconciliation job pulls Cashfree's orders/settlements and flags mismatches.
-6. Receipt PDF generated after confirmation; WhatsApp confirmation sent.
-
-Exact field and header names to be confirmed against Cashfree's current docs when implementing.
+Changed 13 Oct 2026 at Abhinav's request: no payment gateway. Parents pay to the school's UPI QR code and send
+the transaction ID and receipt screenshot; staff verify against the bank statement and issue the receipt.
+See `docs/FEES.md`.
 
 ## 5. Proposed architecture (single VPS)
 
@@ -68,7 +63,7 @@ Exact field and header names to be confirmed against Cashfree's current docs whe
 
 0. **Set-up:** new LKMS repo from acharya, strip web3/hostel/library/AI/multi-school, move secrets to env, remove committed DB and `.env`, Postgres, Docker Compose for dev.
 1. **Admissions and records:** Session/Class/Section/Enrollment models, school's document checklist, application → review → approve/reject → admission number + class + section, private documents.
-2. **Fees:** fee heads, class-wise structures, installments, concessions with approval, invoices, Cashfree, receipts, reminders.
+2. **Fees:** fee heads, class-wise structures, installments, concessions with approval, invoices, UPI QR payments verified by staff, receipts, reminders.
 3. **Portals:** proper parent accounts (phone OTP, many children), teacher class assignments, daily attendance, marks, notices, admin users/permissions.
 4. **WhatsApp:** Blastup service + templates for fee due, payment received, admission status, absence, announcements, exams/holidays/PTM.
 5. **Academic admin:** exams and report cards in the school's format, promotion, timetable, homework, circulars, TC, daily collection and defaulter reports, audit trail, backup and restore drill.

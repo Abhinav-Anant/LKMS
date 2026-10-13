@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from core.notify import notify
-from fees import online
+from fees import upi
 from fees.models import Invoice
 
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         for invoice in invoices:
             notify(
                 "fee.reminder", student=invoice.student, invoice=invoice.number, balance=invoice.balance,
-                due_date=invoice.due_date, overdue=invoice.due_date < today, pay_link=online.pay_link(invoice),
+                due_date=invoice.due_date, overdue=invoice.due_date < today, pay_link=upi.pay_link(invoice),
             )
             invoice.last_reminder_at = now
             invoice.save(update_fields=["last_reminder_at"])

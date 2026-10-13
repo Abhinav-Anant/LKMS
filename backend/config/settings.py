@@ -160,17 +160,12 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:8080")
 
-# Where the React app and the public API are reached; used in payment links and Cashfree callbacks.
+# Where parents open the React app; used in fee payment links.
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:8080").rstrip("/")
-PUBLIC_API_BASE_URL = os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8000").rstrip("/")
 
-# Cashfree Payment Gateway. Use sandbox keys until the school's account is live.
-CASHFREE_ENV = os.getenv("CASHFREE_ENV", "sandbox")
-if CASHFREE_ENV not in ("sandbox", "production"):
-    raise ImproperlyConfigured("CASHFREE_ENV must be 'sandbox' or 'production'")
-CASHFREE_CLIENT_ID = os.getenv("CASHFREE_CLIENT_ID", "")
-CASHFREE_CLIENT_SECRET = os.getenv("CASHFREE_CLIENT_SECRET", "")
-CASHFREE_API_VERSION = os.getenv("CASHFREE_API_VERSION", "2025-01-01")
+# The school's UPI account shown on the parent pay page (QR image: frontend/public/school-upi-qr.jpeg).
+SCHOOL_UPI_ID = os.getenv("SCHOOL_UPI_ID", "8619190956@SBI")
+SCHOOL_UPI_NAME = os.getenv("SCHOOL_UPI_NAME", "Lotus Kids Education Society")
 PAY_LINK_MAX_AGE_DAYS = int(os.getenv("PAY_LINK_MAX_AGE_DAYS", "45"))
 
 SPECTACULAR_SETTINGS = {
@@ -187,7 +182,7 @@ SPECTACULAR_SETTINGS = {
         "InvoiceStatusEnum": "fees.models.Invoice.Status",
         "PaymentStatusEnum": "fees.models.Payment.Status",
         "ConcessionStatusEnum": "fees.models.Concession.Status",
-        "OnlineOrderStatusEnum": "fees.models.OnlineOrder.Status",
+        "UpiSubmissionStatusEnum": "fees.models.UpiSubmission.Status",
     },
 }
 

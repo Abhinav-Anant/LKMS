@@ -1,31 +1,24 @@
-import base64
-import hashlib
-import hmac
 import json
 from datetime import date, timedelta
 from decimal import Decimal
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from academics.models import AcademicSession, Enrollment, SchoolClass, Section
+from conftest import png_file
 from core.models import AuditLog
-from fees import cashfree, online
-from fees.models import Concession, FeeHead, Installment, Invoice, OnlineOrder, Payment, PaymentIssue, WebhookEvent
+from fees import upi
+from fees.models import Concession, FeeHead, Installment, Invoice, Payment, UpiSubmission
 from students.models import Guardian, Student, StudentGuardian
 
 pytestmark = pytest.mark.django_db
 
-SECRET = "test-cashfree-secret"
-
 
 @pytest.fixture(autouse=True)
-def cashfree_keys(settings):
-    settings.CASHFREE_CLIENT_ID = "test-app-id"
-    settings.CASHFREE_CLIENT_SECRET = SECRET
-    settings.CASHFREE_ENV = "sandbox"
+def frontend_url(settings):
     settings.FRONTEND_BASE_URL = "https://school.example"
-    settings.PUBLIC_API_BASE_URL = "https://school.example"
 
 
 @pytest.fixture
@@ -195,42 +188,7 @@ def test_reports(staff, current, q1, class1):
     assert [row["number"] for row in defaulters] == [invoice.number]
 
 
-# ----- online payments -----
-
-class FakeCashfree:
-    def __init__(self):
-        self.orders = {}
-        self.payments = {}
-
-    def create_order(self, *, order_id, amount, customer, return_url, notify_url=None, note=""):
-        self.orders[order_id] = {"order_id": order_id, "order_amount": float(amount), "order_status": "ACTIVE"}
-        self.created = {"customer": customer, "return_url": return_url, "notify_url": notify_url}
-        return {"cf_order_id": 123, "payment_session_id": f"session_{order_id}", "order_status": "ACTIVE"}
-
-    def get_order(self, order_id):
-        return self.orders[order_id]
-
-    def get_payments(self, order_id):
-        return self.payments.get(order_id, [])
-
-    def pay(self, order_id, amount=None):
-        order = self.orders[order_id]
-        order["order_status"] = "PAID"
-        payment = {
-            "cf_payment_id": "987654", "order_id": order_id, "payment_status": "SUCCESS",
-            "payment_amount": amount if amount is not None else order["order_amount"], "payment_currency": "INR",
-            "payment_group": "upi", "bank_reference": "UTR1", "payment_time": "2026-10-13T10:00:00+05:30",
-        }
-        self.payments[order_id] = [payment]
-        return payment
-
-
-@pytest.fixture
-def gateway(monkeypatch):
-    fake = FakeCashfree()
-    monkeypatch.setattr(cashfree, "client", lambda: fake)
-    return fake
-
+# ----- UPI payments reported by parents -----
 
 @pytest.fixture
 def invoice(staff, current, q1, class1):
@@ -239,134 +197,101 @@ def invoice(staff, current, q1, class1):
     return Invoice.objects.get(student=student)
 
 
-def start(public, invoice):
-    token = online.make_pay_token(invoice)
-    response = public.post(f"/api/v1/fees/public/pay/{token}/start/")
-    assert response.status_code == 200, response.data
-    return token, response.data
+def pay_url(invoice, suffix=""):
+    return f"/api/v1/fees/public/pay/{upi.make_pay_token(invoice)}/{suffix}"
 
 
-def signed(body: dict, timestamp="1760000000"):
-    raw = json.dumps(body).encode()
-    signature = base64.b64encode(hmac.new(SECRET.encode(), timestamp.encode() + raw, hashlib.sha256).digest()).decode()
-    return raw, {"HTTP_X_WEBHOOK_TIMESTAMP": timestamp, "HTTP_X_WEBHOOK_SIGNATURE": signature}
+def report(public, invoice, utr="412345678901", amount=None, file=None, **extra):
+    data = {
+        "utr": utr, "amount": str(amount or invoice.balance), "paid_on": timezone.localdate().isoformat(),
+        "screenshot": file or png_file("upi.png"), **extra,
+    }
+    return public.post(pay_url(invoice, "upi/"), data, format="multipart")
 
 
-def webhook_body(payment, order_amount, event="PAYMENT_SUCCESS_WEBHOOK"):
-    return {"data": {"order": {"order_id": payment["order_id"], "order_amount": order_amount}, "payment": payment}, "type": event}
-
-
-def test_pay_page_shows_invoice_without_login(public, invoice):
-    token = online.make_pay_token(invoice)
-    response = public.get(f"/api/v1/fees/public/pay/{token}/")
+def test_pay_page_shows_school_upi_without_login(public, invoice):
+    response = public.get(pay_url(invoice))
     assert response.status_code == 200
+    assert response.data["upi_id"] == "8619190956@SBI"
+    assert response.data["payee_name"] == "Lotus Kids Education Society"
     assert response.data["invoice"]["number"] == invoice.number
-    assert "phone" not in json.dumps(response.data)
-    assert public.get(f"/api/v1/fees/public/pay/{token}x/").status_code == 404
+    assert "phone" not in json.dumps(response.data, default=str)
+    assert public.get(f"/api/v1/fees/public/pay/{upi.make_pay_token(invoice)}x/").status_code == 404
 
 
-def test_start_payment_creates_order_for_balance(public, invoice, gateway):
-    token, data = start(public, invoice)
-    order = OnlineOrder.objects.get(order_id=data["order_id"])
-    assert order.amount == invoice.balance and order.status == OnlineOrder.Status.CREATED
-    assert data["payment_session_id"] == f"session_{order.order_id}" and data["mode"] == "sandbox"
-    assert gateway.created["customer"]["customer_phone"] == "9829011111"
-    assert gateway.created["return_url"].endswith(f"/pay/{token}?order_id={order.order_id}")
-    assert gateway.created["notify_url"] == "https://school.example/api/v1/fees/cashfree/webhook/"
-
-
-def test_return_page_does_not_trust_browser(public, invoice, gateway):
-    token, data = start(public, invoice)
-    # Parent comes back but Cashfree has no successful payment: still waiting.
-    response = public.get(f"/api/v1/fees/public/pay/{token}/orders/{data['order_id']}/")
-    assert response.data["status"] == "created"
+def test_parent_report_waits_for_staff_and_does_not_mark_paid(public, invoice):
+    response = report(public, invoice, utr="412345678901")
+    assert response.status_code == 201, response.data
+    assert Decimal(str(response.data["pending_amount"])) == invoice.balance
+    assert response.data["submissions"][0]["status"] == "pending"
     invoice.refresh_from_db()
-    assert invoice.amount_paid == 0
+    assert invoice.amount_paid == 0 and invoice.status == Invoice.Status.UNPAID
+    assert AuditLog.objects.filter(action="fees.upi_submitted").exists()
 
-    gateway.pay(data["order_id"])
-    response = public.get(f"/api/v1/fees/public/pay/{token}/orders/{data['order_id']}/")
-    assert response.data["status"] == "paid" and response.data["receipt_number"]
+
+def test_same_transaction_id_cannot_be_sent_twice(public, invoice):
+    assert report(public, invoice, utr="412345678901").status_code == 201
+    again = report(public, invoice, utr="412345678901", amount=10)
+    assert again.status_code == 400 and "utr" in again.data
+
+
+def test_report_needs_a_real_image_or_pdf_and_valid_utr(public, invoice):
+    fake = SimpleUploadedFile("receipt.png", b"not really an image", content_type="image/png")
+    assert report(public, invoice, file=fake).status_code == 400
+    assert report(public, invoice, utr="12 34").status_code == 400
+    tomorrow = (timezone.localdate() + timedelta(days=1)).isoformat()
+    assert report(public, invoice, paid_on=tomorrow).status_code == 400
+
+
+def test_staff_approve_records_payment_and_receipt(public, staff, invoice):
+    report(public, invoice, utr="412345678901")
+    submission = UpiSubmission.objects.get()
+    assert staff.get(f"/api/v1/fees/upi-submissions/{submission.pk}/screenshot/").status_code == 200
+    response = staff.post(f"/api/v1/fees/upi-submissions/{submission.pk}/approve/", {}, format="json")
+    assert response.status_code == 200, response.data
+    assert response.data["status"] == "approved" and response.data["receipt_number"].startswith("RCT-")
+    payment = Payment.objects.get()
+    assert payment.mode == "upi" and payment.reference == "412345678901"
     invoice.refresh_from_db()
     assert invoice.status == Invoice.Status.PAID
-    pdf = public.get(f"/api/v1/fees/public/pay/{token}/receipts/{response.data['receipt_number']}/")
+
+    page = public.get(pay_url(invoice)).data
+    assert page["receipts"][0]["receipt_number"] == payment.receipt_number
+    pdf = public.get(pay_url(invoice, f"receipts/{payment.receipt_number}/"))
     assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+    # A transaction ID already receipted cannot be reported again.
+    assert report(public, invoice, utr="412345678901").status_code == 400
 
 
-def test_signed_webhook_marks_paid_once(public, invoice, gateway):
-    _, data = start(public, invoice)
-    payment = gateway.pay(data["order_id"])
-    raw, headers = signed(webhook_body(payment, float(invoice.balance)))
-    for _ in range(2):  # Cashfree retries; the second call must not pay twice
-        response = public.generic("POST", "/api/v1/fees/cashfree/webhook/", raw, content_type="application/json", **headers)
-        assert response.status_code == 200
-    assert Payment.objects.filter(invoice=invoice, mode="online").count() == 1
+def test_staff_can_approve_a_different_amount(public, staff, invoice):
+    report(public, invoice, amount=7000)
+    submission = UpiSubmission.objects.get()
+    staff.post(f"/api/v1/fees/upi-submissions/{submission.pk}/approve/", {"amount": "5000"}, format="json")
     invoice.refresh_from_db()
-    assert invoice.status == Invoice.Status.PAID
-    assert WebhookEvent.objects.filter(signature_valid=True, processed=True).count() == 2
+    assert invoice.amount_paid == Decimal("5000") and invoice.status == Invoice.Status.PARTLY_PAID
 
 
-def test_webhook_with_bad_signature_is_rejected(public, invoice, gateway):
-    _, data = start(public, invoice)
-    payment = gateway.pay(data["order_id"])
-    raw, headers = signed(webhook_body(payment, float(invoice.balance)))
-    tampered = raw.replace(b'"SUCCESS"', b'"SUCCESS" ')
-    response = public.generic("POST", "/api/v1/fees/cashfree/webhook/", tampered, content_type="application/json", **headers)
-    assert response.status_code == 400
-    missing = public.generic("POST", "/api/v1/fees/cashfree/webhook/", raw, content_type="application/json")
-    assert missing.status_code == 400
-    invoice.refresh_from_db()
-    assert invoice.amount_paid == 0
-    assert WebhookEvent.objects.filter(signature_valid=False).count() == 2
+def test_reject_with_reason_lets_parent_send_again(public, staff, invoice):
+    report(public, invoice, utr="412345678901")
+    submission = UpiSubmission.objects.get()
+    assert staff.post(f"/api/v1/fees/upi-submissions/{submission.pk}/reject/", {}, format="json").status_code == 400
+    response = staff.post(f"/api/v1/fees/upi-submissions/{submission.pk}/reject/", {"reason": "Not in bank statement"}, format="json")
+    assert response.status_code == 200 and response.data["status"] == "rejected"
+    assert staff.post(f"/api/v1/fees/upi-submissions/{submission.pk}/approve/", {}, format="json").status_code == 400
+    page = public.get(pay_url(invoice)).data
+    assert page["submissions"][0]["reject_reason"] == "Not in bank statement"
+    assert report(public, invoice, utr="412345678901").status_code == 201
 
 
-def test_wrong_amount_is_flagged_not_credited(public, invoice, gateway):
-    _, data = start(public, invoice)
-    payment = gateway.pay(data["order_id"], amount=1)
-    raw, headers = signed(webhook_body(payment, 1))
-    public.generic("POST", "/api/v1/fees/cashfree/webhook/", raw, content_type="application/json", **headers)
-    order = OnlineOrder.objects.get(order_id=data["order_id"])
-    assert order.status == OnlineOrder.Status.MISMATCH
-    assert PaymentIssue.objects.filter(kind="amount_mismatch", order=order).exists()
-    invoice.refresh_from_db()
-    assert invoice.amount_paid == 0
+def test_office_can_see_but_not_approve_upi(public, client_for, invoice):
+    report(public, invoice)
+    submission = UpiSubmission.objects.get()
+    office = client_for("office")
+    assert office.get("/api/v1/fees/upi-submissions/?status=pending").data["count"] == 1
+    assert office.post(f"/api/v1/fees/upi-submissions/{submission.pk}/approve/", {}, format="json").status_code == 403
+    assert client_for("teacher").get("/api/v1/fees/upi-submissions/").status_code == 403
 
 
-def test_failed_payment_webhook(public, invoice, gateway):
-    _, data = start(public, invoice)
-    payment = {"order_id": data["order_id"], "payment_status": "FAILED", "payment_amount": float(invoice.balance)}
-    raw, headers = signed(webhook_body(payment, float(invoice.balance), "PAYMENT_FAILED_WEBHOOK"))
-    public.generic("POST", "/api/v1/fees/cashfree/webhook/", raw, content_type="application/json", **headers)
-    assert OnlineOrder.objects.get(order_id=data["order_id"]).status == OnlineOrder.Status.FAILED
-
-
-def test_online_payment_after_office_payment_is_flagged_as_overpaid(public, staff, invoice, gateway):
-    _, data = start(public, invoice)
+def test_paid_invoice_takes_no_more_reports(public, staff, invoice):
     staff.post(f"/api/v1/fees/invoices/{invoice.pk}/pay/", {"amount": str(invoice.balance), "mode": "cash"}, format="json")
-    gateway.pay(data["order_id"])
-    online.sync_order(OnlineOrder.objects.get(order_id=data["order_id"]))
-    assert PaymentIssue.objects.filter(kind="overpaid").exists()
-
-
-def test_reconciliation_picks_up_missed_webhook(public, invoice, gateway):
-    _, data = start(public, invoice)
-    gateway.pay(data["order_id"])  # webhook never arrived
-    counts = online.reconcile(timezone.now() - timedelta(days=1))
-    assert counts["newly_paid"] == 1
-    invoice.refresh_from_db()
-    assert invoice.status == Invoice.Status.PAID
-
-    # Cashfree later disagrees with what we recorded: flagged for a person.
-    gateway.orders[data["order_id"]]["order_status"] = "ACTIVE"
-    counts = online.reconcile(timezone.now() - timedelta(days=1))
-    assert counts["issues"] == 1
-    assert PaymentIssue.objects.filter(kind="not_paid_at_gateway").exists()
-
-
-def test_signature_helper_accepts_documented_forms():
-    raw, ts = b'{"a":1}', "123"
-    plain = base64.b64encode(hmac.new(SECRET.encode(), ts.encode() + raw, hashlib.sha256).digest()).decode()
-    dotted = base64.b64encode(hmac.new(SECRET.encode(), ts.encode() + b"." + raw, hashlib.sha256).digest()).decode()
-    assert cashfree.verify_signature(raw, ts, plain)
-    assert cashfree.verify_signature(raw, ts, dotted)
-    assert not cashfree.verify_signature(raw, "124", plain)
-    assert not cashfree.verify_signature(raw, ts, "")
+    assert report(public, invoice).status_code == 400

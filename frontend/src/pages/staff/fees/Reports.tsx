@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { NativeSelect } from "@/components/Field";
@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
-import { formatDate, formatDateTime, formatMoney, todayISO } from "@/lib/labels";
-import type { DailyCollection, InvoiceListItem, Paginated, PaymentIssue, SchoolClass } from "@/lib/types";
+import { formatDate, formatMoney, todayISO } from "@/lib/labels";
+import type { DailyCollection, InvoiceListItem, Paginated, SchoolClass } from "@/lib/types";
 
 import { FeesNav } from "./FeesNav";
 
@@ -28,7 +27,6 @@ export default function Reports() {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Fees</h1>
       <FeesNav />
-      <Issues />
       <Daily day={day} onDay={(v) => set("date", v)} />
       <Defaulters schoolClass={schoolClass} onClass={(v) => set("school_class", v)} />
     </div>
@@ -68,7 +66,7 @@ function Daily({ day, onDay }: { day: string; onDay: (v: string) => void }) {
                       <TableCell><Link to={`/staff/fees/invoices/${p.invoice}`} className="font-mono text-primary underline-offset-4 hover:underline">{p.receipt_number}</Link></TableCell>
                       <TableCell>{p.student_name} <span className="text-muted-foreground">({p.admission_number})</span></TableCell>
                       <TableCell>{p.mode_label}{p.reference && ` · ${p.reference}`}</TableCell>
-                      <TableCell>{p.received_by ?? "Online"}</TableCell>
+                      <TableCell>{p.received_by ?? ""}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatMoney(p.amount)}</TableCell>
                     </TableRow>
                   ))}
@@ -133,35 +131,6 @@ function Defaulters({ schoolClass, onClass }: { schoolClass: string; onClass: (v
           </>
         )
       )}
-    </Panel>
-  );
-}
-
-function Issues() {
-  const { can } = useAuth();
-  const queryClient = useQueryClient();
-  const issues = useQuery({ queryKey: ["payment-issues"], queryFn: () => api.get<Paginated<PaymentIssue>>("/fees/issues/", { resolved: "false" }) });
-  const resolve = useMutation({
-    mutationFn: (id: number) => api.patch(`/fees/issues/${id}/`, { resolved: true, resolved_note: "Checked" }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["payment-issues"] }),
-  });
-  if (!issues.data?.results.length) return null;
-  return (
-    <Panel title="Online payments to check" className="border-amber-300">
-      <ul className="divide-y text-sm">
-        {issues.data.results.map((i) => (
-          <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-            <div>
-              <p className="font-medium">{i.kind_label}</p>
-              <p className="text-muted-foreground">{i.detail} · {formatDateTime(i.created_at)}{i.order_id && <> · <span className="font-mono">{i.order_id}</span></>}</p>
-            </div>
-            <div className="flex gap-2">
-              {i.invoice && <Button asChild variant="outline" size="sm"><Link to={`/staff/fees/invoices/${i.invoice}`}>Open invoice</Link></Button>}
-              {can("fees.approve") && <Button variant="ghost" size="sm" onClick={() => resolve.mutate(i.id)}>Mark checked</Button>}
-            </div>
-          </li>
-        ))}
-      </ul>
     </Panel>
   );
 }

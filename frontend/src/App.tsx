@@ -16,6 +16,7 @@ import FeeSetup from "@/pages/staff/fees/FeeSetup";
 import InvoiceDetail from "@/pages/staff/fees/InvoiceDetail";
 import Invoices from "@/pages/staff/fees/Invoices";
 import FeeReports from "@/pages/staff/fees/Reports";
+import UpiPayments from "@/pages/staff/fees/UpiPayments";
 import Applications from "@/pages/staff/Applications";
 import Login from "@/pages/staff/Login";
 import StudentDetail from "@/pages/staff/StudentDetail";
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="students/:id" element={<StudentDetail />} />
               <Route path="fees" element={<Invoices />} />
               <Route path="fees/invoices/:id" element={<InvoiceDetail />} />
+              <Route path="fees/upi" element={<UpiPayments />} />
               <Route path="fees/concessions" element={<Concessions />} />
               <Route path="fees/reports" element={<FeeReports />} />
               <Route path="fees/setup" element={<FeeSetup />} />

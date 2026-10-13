@@ -9,7 +9,7 @@ School management system for Lotus Kids School, Rajasthan.
 - `whatsapp-server/` – WhatsApp messaging service (server part of Blastup), wired in Phase 4
 - `docs/LKMS_PLAN.md` – build plan and phase breakdown
 - `docs/ADMISSIONS.md` – how the admission workflow and its API work
-- `docs/FEES.md` – fee setup, invoices, receipts, Cashfree payments, reconciliation
+- `docs/FEES.md` – fee setup, invoices, receipts, UPI QR payments and how staff verify them
 
 ## Running the backend locally (Windows, PowerShell)
 
@@ -43,7 +43,7 @@ npm install
 npm run dev          # http://localhost:8080
 ```
 
-- Parents: `/apply` to fill in the admission form, `/track` to check status and upload documents, `/pay/...` links to pay fees.
+- Parents: `/apply` to fill in the admission form, `/track` to check status and upload documents, `/pay/...` links to pay fees by the school's UPI QR and send the receipt.
 - Staff: `/staff/login` with a user created in the Django admin (set its role, e.g. office or principal).
 - Checks: `npm run typecheck`, `npm run lint`, `npm run build`.
 

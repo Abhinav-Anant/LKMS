@@ -10,11 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ApiError, api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { ORDER_STATUS_LABELS, PAYMENT_MODES, formatDate, formatDateTime, formatMoney, todayISO } from "@/lib/labels";
-import type { FeePayment, InvoiceDetail as Detail, OnlineOrder } from "@/lib/types";
+import { PAYMENT_MODES, formatDate, formatDateTime, formatMoney, todayISO } from "@/lib/labels";
+import type { FeePayment, InvoiceDetail as Detail } from "@/lib/types";
 
 import { FeesNav } from "./FeesNav";
 import { openPdf } from "./receipt";
+import { UpiCard } from "./UpiCard";
 
 export default function InvoiceDetail() {
   const { id } = useParams();
@@ -100,12 +101,10 @@ export default function InvoiceDetail() {
             )}
           </Panel>
 
-          {inv.online_orders.length > 0 && (
-            <Panel title="Online payment attempts">
-              <ul className="divide-y text-sm">
-                {inv.online_orders.map((o) => (
-                  <OrderRow key={o.id} invoiceId={inv.id} order={o} onDone={refresh} onError={setError} />
-                ))}
+          {inv.upi_submissions.length > 0 && (
+            <Panel title="UPI payments sent by the parent">
+              <ul className="space-y-3">
+                {inv.upi_submissions.map((u) => <UpiCard key={u.id} submission={u} />)}
               </ul>
             </Panel>
           )}
@@ -157,27 +156,6 @@ function PaymentRow({ payment: p, canReverse, onDone, onError }: { payment: FeeP
           <Button type="submit" variant="destructive" size="sm" disabled={!reason || reverse.isPending}>Reverse payment</Button>
           <Button type="button" variant="ghost" size="sm" onClick={() => setAsking(false)}>Keep</Button>
         </form>
-      )}
-    </li>
-  );
-}
-
-function OrderRow({ invoiceId, order: o, onDone, onError }: { invoiceId: number; order: OnlineOrder; onDone: () => void; onError: (e: unknown) => void }) {
-  const check = useMutation({
-    mutationFn: () => api.post(`/fees/invoices/${invoiceId}/orders/${o.order_id}/check/`),
-    onSuccess: onDone,
-    onError,
-  });
-  return (
-    <li className="flex flex-wrap items-center justify-between gap-2 py-2">
-      <div>
-        <p><span className="font-medium">{ORDER_STATUS_LABELS[o.status]}</span> · {formatMoney(o.amount)}{o.payment_group && ` · ${o.payment_group}`}</p>
-        <p className="text-muted-foreground"><span className="font-mono">{o.order_id}</span> · {formatDateTime(o.created_at)}{o.status_note && ` · ${o.status_note}`}</p>
-      </div>
-      {(o.status === "created" || o.status === "failed" || o.status === "expired") && (
-        <Button variant="outline" size="sm" onClick={() => check.mutate()} disabled={check.isPending}>
-          {check.isPending ? "Checking…" : "Check with Cashfree"}
-        </Button>
       )}
     </li>
   );
@@ -256,7 +234,7 @@ function PayLink({ invoiceId, onError }: { invoiceId: number; onError: (e: unkno
   };
   return (
     <Panel title="Online payment link">
-      <p className="text-sm text-muted-foreground">Send this to the parent. They can pay by UPI, card or net banking without signing in.</p>
+      <p className="text-sm text-muted-foreground">Send this to the parent. It shows the fees, the school UPI QR code, and a form to send the payment receipt. No sign-in needed.</p>
       {url ? (
         <div className="space-y-2">
           <Input readOnly value={url} onFocus={(e) => e.currentTarget.select()} aria-label="Payment link" />

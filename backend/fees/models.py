@@ -4,6 +4,8 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from core.storage import RandomPath, get_private_storage
+
 MONEY = {"max_digits": 10, "decimal_places": 2}
 
 
@@ -169,47 +171,12 @@ class InvoiceLine(models.Model):
         return self.amount - self.concession
 
 
-class OnlineOrder(models.Model):
-    """A Cashfree order. Marked paid only from a verified webhook or a server-side status check."""
-
-    class Status(models.TextChoices):
-        CREATED = "created", "Waiting for payment"
-        PAID = "paid", "Paid"
-        FAILED = "failed", "Failed"
-        EXPIRED = "expired", "Expired"
-        MISMATCH = "mismatch", "Needs checking"
-
-    order_id = models.CharField(max_length=45, unique=True)
-    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="online_orders")
-    amount = models.DecimalField(**MONEY)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.CREATED, db_index=True)
-    cf_order_id = models.CharField(max_length=50, blank=True)
-    payment_session_id = models.CharField(max_length=300, blank=True)
-    cf_payment_id = models.CharField(max_length=50, blank=True)
-    payment_group = models.CharField(max_length=30, blank=True)
-    bank_reference = models.CharField(max_length=100, blank=True)
-    status_note = models.CharField(max_length=200, blank=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    paid_at = models.DateTimeField(null=True, blank=True)
-    last_checked_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return f"{self.order_id} ({self.get_status_display()})"
-
-
 class Payment(models.Model):
     class Mode(models.TextChoices):
         CASH = "cash", "Cash"
         CHEQUE = "cheque", "Cheque"
         BANK_TRANSFER = "bank_transfer", "Bank transfer"
         UPI = "upi", "UPI to school account"
-        ONLINE = "online", "Online (Cashfree)"
 
     class Status(models.TextChoices):
         COMPLETED = "completed", "Completed"
@@ -219,11 +186,8 @@ class Payment(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="payments")
     amount = models.DecimalField(**MONEY, validators=[MinValueValidator(Decimal("0.01"))])
     mode = models.CharField(max_length=15, choices=Mode.choices)
-    reference = models.CharField(max_length=100, blank=True, help_text="Cheque number, UTR or Cashfree payment id")
+    reference = models.CharField(max_length=100, blank=True, help_text="Cheque number or UPI/bank transaction reference (UTR)")
     paid_on = models.DateField()
-    online_order = models.OneToOneField(
-        OnlineOrder, null=True, blank=True, on_delete=models.PROTECT, related_name="payment"
-    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.COMPLETED)
     received_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -242,44 +206,40 @@ class Payment(models.Model):
         return f"{self.receipt_number} Rs {self.amount}"
 
 
-class WebhookEvent(models.Model):
-    """Every call to the Cashfree webhook, stored as received."""
+class UpiSubmission(models.Model):
+    """A parent's report that they paid by scanning the school's UPI QR code.
 
-    received_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    event_type = models.CharField(max_length=60, blank=True)
-    order_id = models.CharField(max_length=45, blank=True, db_index=True)
-    signature_valid = models.BooleanField(default=False)
-    timestamp = models.CharField(max_length=30, blank=True)
-    signature = models.CharField(max_length=200, blank=True)
-    raw_body = models.TextField()
-    processed = models.BooleanField(default=False)
-    error = models.CharField(max_length=300, blank=True)
+    Nothing is credited until a staff member checks the money arrived in the
+    school's bank account and approves it; approving records a Payment and
+    issues the receipt.
+    """
 
-    class Meta:
-        ordering = ["-received_at"]
+    class Status(models.TextChoices):
+        PENDING = "pending", "Waiting for the school to check"
+        APPROVED = "approved", "Verified and receipted"
+        REJECTED = "rejected", "Not verified"
 
-    def __str__(self):
-        return f"{self.received_at:%Y-%m-%d %H:%M} {self.event_type} {self.order_id}"
-
-
-class PaymentIssue(models.Model):
-    """Something about an online payment a person needs to look at."""
-
-    class Kind(models.TextChoices):
-        AMOUNT_MISMATCH = "amount_mismatch", "Amount paid differs from the order"
-        OVERPAID = "overpaid", "Paid more than the balance (refund or adjust)"
-        NOT_PAID_AT_GATEWAY = "not_paid_at_gateway", "Recorded as paid but Cashfree does not show it paid"
-        UNKNOWN_ORDER = "unknown_order", "Webhook for an order LKMS did not create"
-
-    kind = models.CharField(max_length=30, choices=Kind.choices)
-    order = models.ForeignKey(OnlineOrder, null=True, blank=True, on_delete=models.PROTECT, related_name="issues")
-    detail = models.TextField()
-    resolved = models.BooleanField(default=False)
-    resolved_note = models.CharField(max_length=200, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="upi_submissions")
+    amount = models.DecimalField(**MONEY, validators=[MinValueValidator(Decimal("1"))])
+    utr = models.CharField("UPI transaction ID (UTR)", max_length=30, db_index=True)
+    paid_on = models.DateField()
+    payer_name = models.CharField(max_length=100, blank=True)
+    screenshot = models.FileField(upload_to=RandomPath("upi-receipts"), storage=get_private_storage)
+    screenshot_type = models.CharField(max_length=50)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING, db_index=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    submitted_from = models.GenericIPAddressField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reject_reason = models.CharField(max_length=200, blank=True)
+    payment = models.OneToOneField(Payment, null=True, blank=True, on_delete=models.PROTECT, related_name="upi_submission")
 
     class Meta:
-        ordering = ["resolved", "-created_at"]
+        ordering = ["-submitted_at"]
+        constraints = [
+            # The same bank transaction cannot be claimed twice (a rejected claim can be sent again).
+            models.UniqueConstraint(fields=["utr"], condition=~models.Q(status="rejected"), name="unique_live_utr"),
+        ]
 
     def __str__(self):
-        return f"{self.get_kind_display()}: {self.order_id or ''}"
+        return f"UPI {self.utr} Rs {self.amount} for {self.invoice.number}"

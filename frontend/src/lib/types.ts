@@ -237,8 +237,8 @@ export interface StudentDetail {
 // ----- fees -----
 
 export type InvoiceStatus = "unpaid" | "partly_paid" | "paid" | "cancelled";
-export type PaymentMode = "cash" | "cheque" | "bank_transfer" | "upi" | "online";
-export type OrderStatus = "created" | "paid" | "failed" | "expired" | "mismatch";
+export type PaymentMode = "cash" | "cheque" | "bank_transfer" | "upi";
+export type UpiStatus = "pending" | "approved" | "rejected";
 
 /** Money comes from the API as a decimal string, e.g. "7000.00". */
 export type Money = string;
@@ -297,16 +297,27 @@ export interface FeePayment {
   reversed_at: string | null;
 }
 
-export interface OnlineOrder {
+export interface UpiSubmission {
   id: number;
-  order_id: string;
+  invoice: number;
+  invoice_number: string;
+  student: number;
+  student_name: string;
+  admission_number: string;
+  class_name: string;
+  invoice_balance: Money;
   amount: Money;
-  status: OrderStatus;
-  status_note: string;
-  payment_group: string;
-  cf_payment_id: string;
-  created_at: string;
-  paid_at: string | null;
+  utr: string;
+  paid_on: string;
+  payer_name: string;
+  screenshot_type: string;
+  status: UpiStatus;
+  submitted_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  reject_reason: string;
+  receipt_number: string | null;
+  payment_id: number | null;
 }
 
 export interface InvoiceListItem {
@@ -333,7 +344,7 @@ export interface InvoiceDetail extends InvoiceListItem {
   created_at: string;
   lines: InvoiceLine[];
   payments: FeePayment[];
-  online_orders: OnlineOrder[];
+  upi_submissions: UpiSubmission[];
 }
 
 export interface Concession {
@@ -354,18 +365,6 @@ export interface Concession {
   decided_by: string | null;
   decided_at: string | null;
   decision_note: string;
-}
-
-export interface PaymentIssue {
-  id: number;
-  kind: string;
-  kind_label: string;
-  order_id: string;
-  invoice: number | null;
-  detail: string;
-  resolved: boolean;
-  resolved_note: string;
-  created_at: string;
 }
 
 export interface DailyCollection {
@@ -389,4 +388,25 @@ export interface PublicInvoice {
   amount_paid: Money;
   balance: Money;
   status: InvoiceStatus;
+}
+
+export interface PublicSubmission {
+  amount: Money;
+  utr: string;
+  paid_on: string;
+  status: UpiStatus;
+  status_label: string;
+  reject_reason: string;
+  submitted_at: string;
+  receipt_number: string | null;
+}
+
+export interface PayPage {
+  invoice: PublicInvoice;
+  school_name: string;
+  upi_id: string;
+  payee_name: string;
+  pending_amount: Money;
+  submissions: PublicSubmission[];
+  receipts: { receipt_number: string; amount: Money; paid_on: string }[];
 }

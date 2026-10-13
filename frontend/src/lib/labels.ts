@@ -78,12 +78,10 @@ export const PAYMENT_MODES = [
   { value: "upi", label: "UPI to school account" },
 ];
 
-export const ORDER_STATUS_LABELS: Record<string, string> = {
-  created: "Waiting for payment",
-  paid: "Paid",
-  failed: "Failed",
-  expired: "Expired",
-  mismatch: "Needs checking",
+export const UPI_STATUS_LABELS: Record<string, string> = {
+  pending: "Waiting to be checked",
+  approved: "Verified and receipted",
+  rejected: "Not verified",
 };
 
 export const CONCESSION_STATUS_LABELS: Record<string, string> = {

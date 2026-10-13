@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.utils import timezone
@@ -7,17 +8,21 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serial
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from core import audit
+from core.audit import client_ip
 from core.errors import as_api_errors
+from core.models import SchoolProfile
 from core.permissions import Can, ReadOrManage
+from core.storage import private_file_response, validate_upload
 
-from . import cashfree, online, services
-from .models import Concession, FeeAmount, FeeHead, Installment, Invoice, OnlineOrder, Payment, PaymentIssue
+from . import services, upi
+from .models import Concession, FeeAmount, FeeHead, Installment, Invoice, Payment, UpiSubmission
 from .receipts import receipt_pdf
 from .serializers import (
     ConcessionSerializer,
@@ -28,13 +33,15 @@ from .serializers import (
     GenerateInvoicesSerializer,
     InstallmentSerializer,
     InvoiceDetailSerializer,
+    ApproveUpiSerializer,
     InvoiceListSerializer,
-    OnlineOrderSerializer,
-    PaymentIssueSerializer,
     PaymentSerializer,
     PublicInvoiceSerializer,
+    PublicSubmissionSerializer,
     ReasonSerializer,
     RecordPaymentSerializer,
+    UpiSubmissionSerializer,
+    UpiSubmitSerializer,
 )
 
 
@@ -103,7 +110,7 @@ class InvoiceViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
     def get_queryset(self):
         qs = Invoice.objects.select_related("student", "school_class", "installment", "session")
         if self.action == "retrieve":
-            qs = qs.prefetch_related("lines__fee_head", "payments__received_by", "online_orders")
+            qs = qs.prefetch_related("lines__fee_head", "payments__received_by", "upi_submissions__reviewed_by", "upi_submissions__payment")
         if self.request.query_params.get("overdue") == "1":
             qs = qs.filter(due_date__lt=timezone.localdate(), status__in=[Invoice.Status.UNPAID, Invoice.Status.PARTLY_PAID])
         return qs
@@ -146,23 +153,10 @@ class InvoiceViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
     @extend_schema(request=None, responses=inline_serializer("PayLink", {"url": serializers.URLField()}))
     @action(detail=True, methods=["post"], url_path="pay-link", permission_classes=[Can("fees.view")])
     def pay_link(self, request, pk=None):
-        """A link parents can open to pay this invoice online."""
+        """A link parents can open to pay this invoice by UPI and send their receipt."""
         invoice = self.get_object()
         audit.record(request, "fees.pay_link_created", invoice)
-        return Response({"url": online.pay_link(invoice)})
-
-    @extend_schema(request=None, responses=OnlineOrderSerializer)
-    @action(detail=True, methods=["post"], url_path=r"orders/(?P<order_id>[\w-]+)/check", permission_classes=[Can("fees.view")])
-    def check_order(self, request, pk=None, order_id=None):
-        """Ask Cashfree for the latest state of an online payment."""
-        order = OnlineOrder.objects.filter(invoice_id=pk, order_id=order_id).first()
-        if order is None:
-            raise NotFound
-        try:
-            order = online.sync_order(order)
-        except cashfree.CashfreeError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
-        return Response(OnlineOrderSerializer(order).data)
+        return Response({"url": upi.pay_link(invoice)})
 
 
 class PaymentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -233,20 +227,48 @@ class ConcessionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins
         return Response(ConcessionSerializer(concession).data)
 
 
-class PaymentIssueViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    """Online payments that need a person to look at them."""
+class UpiSubmissionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """UPI payments parents say they made. Staff check each against the bank statement."""
 
-    permission_classes = [ReadOrManage]
-    view_capability = "fees.view"
-    manage_capability = "fees.approve"
-    serializer_class = PaymentIssueSerializer
-    queryset = PaymentIssue.objects.select_related("order")
-    filterset_fields = ["resolved", "kind"]
-    http_method_names = ["get", "patch", "head", "options"]
+    serializer_class = UpiSubmissionSerializer
+    filterset_fields = ["status", "invoice"]
+    search_fields = ["utr", "invoice__number", "invoice__student__first_name", "invoice__student__admission_number"]
 
-    def perform_update(self, serializer):
-        issue = serializer.save()
-        audit.record(self.request, "fees.payment_issue_updated", issue, resolved=issue.resolved)
+    def get_permissions(self):
+        if self.action in ("approve", "reject"):
+            return [Can("fees.collect")()]
+        return [Can("fees.view")()]
+
+    def get_queryset(self):
+        return UpiSubmission.objects.select_related(
+            "invoice__student", "invoice__school_class", "reviewed_by", "payment"
+        ).order_by("status", "submitted_at")
+
+    @extend_schema(responses={(200, "application/octet-stream"): OpenApiTypes.BINARY})
+    @action(detail=True, methods=["get"])
+    def screenshot(self, request, pk=None):
+        submission = self.get_object()
+        audit.record(request, "fees.upi_screenshot_viewed", submission)
+        return private_file_response(submission.screenshot, submission.screenshot_type, f"upi-{submission.utr}")
+
+    @extend_schema(request=ApproveUpiSerializer, responses=UpiSubmissionSerializer)
+    @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        """The money is in the school's bank account: record it and issue the receipt."""
+        serializer = ApproveUpiSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with as_api_errors():
+            submission = upi.approve(request, self.get_object(), serializer.validated_data.get("amount"))
+        return Response(UpiSubmissionSerializer(self.get_queryset().get(pk=submission.pk)).data)
+
+    @extend_schema(request=ReasonSerializer, responses=UpiSubmissionSerializer)
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        serializer = ReasonSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with as_api_errors():
+            submission = upi.reject(request, self.get_object(), serializer.validated_data["reason"])
+        return Response(UpiSubmissionSerializer(self.get_queryset().get(pk=submission.pk)).data)
 
 
 # ----- reports -----
@@ -311,72 +333,63 @@ class _PublicPay(APIView):
     throttle_scope = "public_payment"
 
     def invoice(self, token):
-        invoice = online.invoice_from_token(token)
+        invoice = upi.invoice_from_token(token)
         if invoice is None:
             raise NotFound("This payment link is not valid or has expired. Please ask the school for a new one.")
         return invoice
 
 
+def _pay_page(invoice):
+    receipts = invoice.payments.filter(status=Payment.Status.COMPLETED).order_by("paid_on")
+    return {
+        "invoice": PublicInvoiceSerializer(invoice).data,
+        "school_name": SchoolProfile.get().name,
+        **upi.upi_details(),
+        "pending_amount": upi.pending_amount(invoice),
+        "submissions": PublicSubmissionSerializer(invoice.upi_submissions.select_related("payment"), many=True).data,
+        "receipts": [{"receipt_number": p.receipt_number, "amount": p.amount, "paid_on": p.paid_on} for p in receipts],
+    }
+
+
+PAY_PAGE = inline_serializer("PublicPayPage", {
+    "invoice": PublicInvoiceSerializer(),
+    "school_name": serializers.CharField(),
+    "upi_id": serializers.CharField(),
+    "payee_name": serializers.CharField(),
+    "pending_amount": serializers.DecimalField(max_digits=10, decimal_places=2),
+    "submissions": PublicSubmissionSerializer(many=True),
+    "receipts": serializers.ListField(child=serializers.DictField()),
+})
+
+
 class PublicInvoiceView(_PublicPay):
-    serializer_class = PublicInvoiceSerializer
-
-    @extend_schema(responses=inline_serializer("PublicPayPage", {
-        "invoice": PublicInvoiceSerializer(), "online_payments_enabled": serializers.BooleanField(),
-        "school_name": serializers.CharField(),
-    }))
+    @extend_schema(responses=PAY_PAGE)
     def get(self, request, token):
-        from core.models import SchoolProfile
-
-        invoice = self.invoice(token)
-        return Response({
-            "invoice": PublicInvoiceSerializer(invoice).data,
-            "online_payments_enabled": cashfree.is_configured(),
-            "school_name": SchoolProfile.get().name,
-        })
+        return Response(_pay_page(self.invoice(token)))
 
 
-class PublicStartPaymentView(_PublicPay):
-    @extend_schema(request=None, responses=inline_serializer("StartPayment", {
-        "order_id": serializers.CharField(), "payment_session_id": serializers.CharField(),
-        "mode": serializers.CharField(), "amount": serializers.DecimalField(max_digits=10, decimal_places=2),
-    }))
+class PublicUpiSubmitView(_PublicPay):
+    """The parent paid to the school's UPI QR code and sends the transaction ID and receipt screenshot."""
+
+    parser_classes = [MultiPartParser, FormParser]
+
+    @extend_schema(request=UpiSubmitSerializer, responses={201: PAY_PAGE})
     def post(self, request, token):
-        from django.conf import settings
-
         invoice = self.invoice(token)
-        try:
-            with as_api_errors():
-                order = online.start_payment(request, invoice, token)
-        except cashfree.CashfreeError as exc:
-            return Response({"detail": f"Online payment could not be started. {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
-        return Response({
-            "order_id": order.order_id, "payment_session_id": order.payment_session_id,
-            "mode": settings.CASHFREE_ENV, "amount": order.amount,
-        })
-
-
-class PublicOrderStatusView(_PublicPay):
-    @extend_schema(request=None, responses=inline_serializer("PublicOrderStatus", {
-        "status": serializers.CharField(), "receipt_number": serializers.CharField(allow_null=True),
-        "invoice": PublicInvoiceSerializer(),
-    }))
-    def get(self, request, token, order_id):
-        """Called when Cashfree sends the parent back. Checks with Cashfree; never trusts the redirect."""
-        invoice = self.invoice(token)
-        order = OnlineOrder.objects.filter(invoice=invoice, order_id=order_id).first()
-        if order is None:
-            raise NotFound
-        try:
-            order = online.sync_order(order)
-        except cashfree.CashfreeError:
-            pass  # show the stored state; the webhook or reconciliation will catch up
+        serializer = UpiSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        with as_api_errors():
+            try:
+                _, mime, _ = validate_upload(data["screenshot"], ("jpg", "png", "pdf"))
+            except DjangoValidationError as exc:
+                raise DjangoValidationError({"screenshot": exc.messages}) from exc
+            upi.submit(
+                request, invoice, amount=data["amount"], utr=data["utr"], paid_on=data["paid_on"],
+                payer_name=data["payer_name"], screenshot=data["screenshot"], screenshot_type=mime, ip=client_ip(request),
+            )
         invoice.refresh_from_db()
-        payment = getattr(order, "payment", None) if order.status == OnlineOrder.Status.PAID else None
-        return Response({
-            "status": order.status,
-            "receipt_number": payment.receipt_number if payment else None,
-            "invoice": PublicInvoiceSerializer(invoice).data,
-        })
+        return Response(_pay_page(invoice), status=status.HTTP_201_CREATED)
 
 
 class PublicReceiptView(_PublicPay):
@@ -387,20 +400,3 @@ class PublicReceiptView(_PublicPay):
         if payment is None:
             raise NotFound
         return pdf_response(payment)
-
-
-class CashfreeWebhookView(APIView):
-    """Cashfree calls this after each payment attempt. Configure it in the Cashfree dashboard."""
-
-    permission_classes = [AllowAny]
-    authentication_classes = []
-
-    @extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT, 400: OpenApiTypes.OBJECT})
-    def post(self, request):
-        code, message = online.handle_webhook(
-            request.body,
-            request.headers.get("x-webhook-timestamp", ""),
-            request.headers.get("x-webhook-signature", ""),
-        )
-        return Response({"detail": message}, status=code)
-

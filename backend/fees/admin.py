@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Concession, FeeAmount, FeeHead, Installment, Invoice, InvoiceLine, OnlineOrder, Payment, PaymentIssue, WebhookEvent
+from .models import Concession, FeeAmount, FeeHead, Installment, Invoice, InvoiceLine, Payment, UpiSubmission
 
 
 @admin.register(FeeHead)
@@ -77,22 +77,9 @@ class PaymentAdmin(ReadOnlyAdmin):
     search_fields = ["receipt_number", "reference", "invoice__number"]
 
 
-@admin.register(OnlineOrder)
-class OnlineOrderAdmin(ReadOnlyAdmin):
-    list_display = ["order_id", "invoice", "amount", "status", "payment_group", "created_at", "paid_at"]
+@admin.register(UpiSubmission)
+class UpiSubmissionAdmin(ReadOnlyAdmin):
+    list_display = ["submitted_at", "invoice", "amount", "utr", "paid_on", "status", "reviewed_by"]
     list_filter = ["status"]
-    search_fields = ["order_id", "cf_payment_id", "invoice__number"]
-
-
-@admin.register(WebhookEvent)
-class WebhookEventAdmin(ReadOnlyAdmin):
-    list_display = ["received_at", "event_type", "order_id", "signature_valid", "processed", "error"]
-    list_filter = ["signature_valid", "processed", "event_type"]
-    search_fields = ["order_id"]
-
-
-@admin.register(PaymentIssue)
-class PaymentIssueAdmin(admin.ModelAdmin):
-    list_display = ["created_at", "kind", "order", "resolved"]
-    list_filter = ["resolved", "kind"]
-    readonly_fields = ["kind", "order", "detail", "created_at"]
+    search_fields = ["utr", "invoice__number", "invoice__student__first_name"]
+    exclude = ["screenshot"]  # view it in the staff app, which logs who looked
