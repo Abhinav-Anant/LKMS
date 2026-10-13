@@ -14,6 +14,7 @@ School management system for Lotus Kids School, Rajasthan.
 - `docs/WHATSAPP.md` – WhatsApp alerts: what is sent, safety limits, opt-outs and server setup
 - `docs/EXAMS.md` – exam terms, report cards, transfer certificates and school-wide reports
 - `docs/DEPLOY.md` – step-by-step setup on a server (Ubuntu VPS, PostgreSQL, Nginx, HTTPS, WhatsApp, backups)
+- `deploy/setup_wizard.py` – asks for every setting and the school's details one question at a time, then sets up the server (`DEPLOY.md` step 6)
 - `docs/BACKUPS.md` – nightly backups, retention, off-site copies and how to restore
 - `docs/BOARD_CHECKS.md` – placeholder formats the school and the Rajasthan board still need to confirm
 

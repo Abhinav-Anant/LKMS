@@ -50,6 +50,22 @@ def current_session_dates(today):
     return start_year, date(start_year, 4, 1), date(start_year + 1, 3, 31)
 
 
+def seed_reference_data():
+    """Document types, subjects, periods and the grade scale. Existing rows are kept."""
+    for order, (code, name, required, description, allow_pdf, allow_image) in enumerate(DOCUMENTS, start=1):
+        DocumentType.objects.get_or_create(code=code, defaults={
+            "name": name, "is_required": required, "description": description,
+            "allow_pdf": allow_pdf, "allow_image": allow_image, "order": order,
+        })
+    for order, name in enumerate(SUBJECTS, start=1):
+        Subject.objects.get_or_create(name=name, defaults={"code": name.lower().replace(" ", "-")[:20], "order": order})
+    for number, begins, ends in PERIODS:
+        PeriodSlot.objects.get_or_create(number=number, defaults={"start_time": begins, "end_time": ends})
+    if not GradeBand.objects.exists():
+        for grade, minimum, description, is_pass in DEFAULT_BANDS:
+            GradeBand.objects.create(grade=grade, min_percent=minimum, description=description, is_pass=is_pass)
+
+
 class Command(BaseCommand):
     help = "Create placeholder classes, sections, sessions, document types, subjects and periods."
 
@@ -73,20 +89,7 @@ class Command(BaseCommand):
             for session in (current, upcoming):
                 Section.objects.get_or_create(session=session, school_class=school_class, name="A")
 
-        for order, (code, name, required, description, allow_pdf, allow_image) in enumerate(DOCUMENTS, start=1):
-            DocumentType.objects.get_or_create(code=code, defaults={
-                "name": name, "is_required": required, "description": description,
-                "allow_pdf": allow_pdf, "allow_image": allow_image, "order": order,
-            })
-
-        for order, name in enumerate(SUBJECTS, start=1):
-            Subject.objects.get_or_create(name=name, defaults={"code": name.lower().replace(" ", "-")[:20], "order": order})
-        for number, begins, ends in PERIODS:
-            PeriodSlot.objects.get_or_create(number=number, defaults={"start_time": begins, "end_time": ends})
-
-        if not GradeBand.objects.exists():
-            for grade, minimum, description, is_pass in DEFAULT_BANDS:
-                GradeBand.objects.create(grade=grade, min_percent=minimum, description=description, is_pass=is_pass)
+        seed_reference_data()
 
         call_command("seed_fee_placeholders", stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS(
