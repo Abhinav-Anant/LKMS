@@ -1,8 +1,9 @@
-# Things to confirm with the school and the Rajasthan board
+# Things to confirm with each school and its board
 
-LKMS works now with placeholder formats. Before the school relies on these for official documents, someone at
-Lotus Kids should check each item below against what the school actually uses and what the Rajasthan education
-department (RBSE / Shala Darpan / district education office) requires. Each item says where to change it.
+LKMS ships with standard formats. Before a school relies on them for official documents, someone at the school
+should check each item below against what it actually uses and what its board or state education department
+requires (for a Rajasthan school: RBSE, Shala Darpan and the district education office). Each item says where to
+change it. This list was first written for Lotus Kids School (Rajasthan board); the items apply to any school.
 
 ## Needs the school's own format (please send a sample)
 

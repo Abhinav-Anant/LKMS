@@ -14,7 +14,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from core import audit
-from core.permissions import CAPABILITIES, Can
+from core.models import SchoolProfile
+from core.permissions import CAPABILITIES, Can, roles_for
 
 from . import parent_login
 from .models import User
@@ -140,7 +141,8 @@ class IssueParentCodeView(APIView):
 
 
 def temporary_password():
-    return f"Lotus-{secrets.token_hex(3)}-{secrets.randbelow(90) + 10}"
+    prefix = "".join(ch for ch in SchoolProfile.get().short_code if ch.isalnum()).capitalize() or "School"
+    return f"{prefix}-{secrets.token_hex(3)}-{secrets.randbelow(90) + 10}"
 
 
 class StaffUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin,
@@ -200,5 +202,5 @@ def permission_matrix(request):
     """Which role may do what. Read-only: changing it is a code change."""
     return Response({
         "roles": [{"value": r.value, "label": r.label} for r in STAFF_ROLES],
-        "capabilities": [{"key": key, "roles": sorted(roles)} for key, roles in CAPABILITIES.items()],
+        "capabilities": [{"key": key, "roles": sorted(roles_for(key))} for key in CAPABILITIES],
     })

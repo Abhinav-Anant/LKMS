@@ -12,11 +12,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 25% 14%;
 
-    /* Lotus pink */
-    --primary: 332 62% 42%;
+    /* Default colour; the school's own colour (School settings) replaces it when the page loads. */
+    --primary: 224 76% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 332 62% 92%;
-    --primary-glow: 332 62% 96%;
+    --primary-light: 224 76% 92%;
+    --primary-glow: 224 76% 96%;
 
     /* Leaf green */
     --secondary: 158 45% 24%;
@@ -38,7 +38,7 @@
 
     --border: 220 13% 84%;
     --input: 220 13% 70%;
-    --ring: 332 62% 42%;
+    --ring: 224 76% 40%;
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;

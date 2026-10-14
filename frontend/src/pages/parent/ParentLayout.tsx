@@ -3,7 +3,8 @@ import { Link, NavLink, Navigate, Outlet } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { useSchool } from "@/lib/school";
+import { SchoolName } from "@/components/SchoolName";
+import { useBranding } from "@/lib/school";
 import { cn } from "@/lib/utils";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -11,7 +12,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 
 export function ParentLayout() {
   const { user, loading, signOut } = useAuth();
-  const school = useSchool();
+  const school = useBranding();
   if (loading) return <p className="p-8 text-muted-foreground">Loading…</p>;
   if (!user) return <Navigate to="/parent/login" replace />;
   if (user.role !== "parent") return <Navigate to="/staff" replace />;
@@ -21,7 +22,7 @@ export function ParentLayout() {
       <header className="border-b bg-background">
         <div className="container flex flex-wrap items-center justify-between gap-2 py-3">
           <div className="flex flex-wrap items-center gap-4">
-            <Link to="/parent" className="text-lg font-semibold text-primary">{school?.name ?? "Lotus Kids School"}</Link>
+            <Link to="/parent" className="text-lg font-semibold text-primary"><SchoolName school={school} /></Link>
             <nav aria-label="Parent" className="flex gap-1">
               <NavLink to="/parent" end className={navClass}>My children</NavLink>
               <NavLink to="/parent/notices" className={navClass}>Notices</NavLink>

@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils import timezone
 
+from core.models import SchoolProfile
 from core.notify import notify
 from fees import upi
 from fees.models import Invoice
@@ -18,16 +19,19 @@ class Command(BaseCommand):
     help = "Send fee reminders (through the notification hook) for invoices due soon or overdue."
 
     def add_arguments(self, parser):
-        parser.add_argument("--days-before", type=int, default=3, help="Remind this many days before the due date")
-        parser.add_argument("--every", type=int, default=7, help="Repeat overdue reminders every N days")
+        parser.add_argument("--days-before", type=int, help="Remind this many days before the due date (default: school settings)")
+        parser.add_argument("--every", type=int, help="Repeat overdue reminders every N days (default: school settings)")
 
     def handle(self, *args, **options):
+        school = SchoolProfile.get()
+        days_before = options["days_before"] if options["days_before"] is not None else school.fee_reminder_days_before
+        every = options["every"] if options["every"] is not None else school.fee_reminder_every_days
         now = timezone.now()
         today = timezone.localdate()
         invoices = (
             Invoice.objects.filter(status__in=[Invoice.Status.UNPAID, Invoice.Status.PARTLY_PAID])
-            .filter(due_date__lte=today + timedelta(days=options["days_before"]))
-            .filter(Q(last_reminder_at__isnull=True) | Q(last_reminder_at__lt=now - timedelta(days=options["every"])))
+            .filter(due_date__lte=today + timedelta(days=days_before))
+            .filter(Q(last_reminder_at__isnull=True) | Q(last_reminder_at__lt=now - timedelta(days=every)))
             .select_related("student")
         )
         sent = 0

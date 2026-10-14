@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/api";
 import { BLOOD_GROUPS, CATEGORIES, GENDERS, RELATIONSHIPS, formatDate } from "@/lib/labels";
+import { useSchool } from "@/lib/school";
 import type { AcademicSession, ApplicationForm, DocumentType, SchoolClass } from "@/lib/types";
 
 const STEPS = ["Child", "Address", "Parents", "Review", "Documents"] as const;
@@ -26,7 +27,7 @@ const EMPTY: ApplicationForm = {
   session: "", class_applied: "", first_name: "", last_name: "", date_of_birth: "", gender: "",
   category: "general", religion: "", mother_tongue: "", nationality: "Indian", blood_group: "",
   aadhaar_number: "", previous_school: "", previous_class: "", sibling_admission_number: "",
-  address_line: "", city: "", district: "", state: "Rajasthan", pincode: "",
+  address_line: "", city: "", district: "", state: "", pincode: "",
   father_name: "", father_phone: "", father_email: "", father_occupation: "", father_qualification: "",
   father_annual_income: "", mother_name: "", mother_phone: "", mother_email: "", mother_occupation: "",
   mother_qualification: "", mother_annual_income: "", guardian_name: "", guardian_relationship: "",
@@ -60,6 +61,11 @@ export default function Apply() {
     const only = options.data?.sessions.length === 1 ? options.data.sessions[0] : null;
     if (only && form.session === "") setForm((f) => ({ ...f, session: only.id }));
   }, [options.data, form.session]);
+
+  const school = useSchool();
+  useEffect(() => {
+    if (school?.state) setForm((f) => (f.state === "" ? { ...f, state: school.state } : f));
+  }, [school?.state]);
 
   useEffect(() => {
     headingRef.current?.focus();

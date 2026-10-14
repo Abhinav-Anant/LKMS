@@ -20,6 +20,7 @@ import { ParentLayout } from "@/pages/parent/ParentLayout";
 import Pay from "@/pages/public/Pay";
 import Track from "@/pages/public/Track";
 import Dashboard from "@/pages/staff/admin/Dashboard";
+import SchoolSettings from "@/pages/staff/admin/SchoolSettings";
 import Setup from "@/pages/staff/admin/Setup";
 import Users from "@/pages/staff/admin/Users";
 import ApplicationDetail from "@/pages/staff/ApplicationDetail";
@@ -86,6 +87,7 @@ export default function App() {
               <Route path="assessments/:id" element={<MarksEntry />} />
               <Route path="notices" element={<Notices />} />
               <Route path="setup" element={<Setup />} />
+              <Route path="school" element={<SchoolSettings />} />
               <Route path="users" element={<Users />} />
               <Route path="password" element={<ChangePassword />} />
               <Route path="whatsapp" element={<WhatsApp />} />

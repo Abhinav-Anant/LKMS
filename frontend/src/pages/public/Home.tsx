@@ -8,7 +8,8 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-2xl space-y-8 py-8">
       <div className="space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight">{school?.name ?? "Lotus Kids School"}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{school?.name}</h1>
+        {school?.board_label && <p className="text-sm font-medium text-muted-foreground">Affiliated to {school.board_label}</p>}
         <p className="text-lg text-muted-foreground">
           Apply for admission online, upload documents, and follow your application's progress.
         </p>

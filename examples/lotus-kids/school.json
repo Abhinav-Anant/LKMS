@@ -1,0 +1,23 @@
+{
+  "domain": "lkms.lotuskids.in",
+  "whatsapp": true,
+
+  "name": "Lotus Kids School",
+  "short_code": "LK",
+  "state": "Rajasthan",
+  "board": "state",
+  "board_name": "Rajasthan Board of Secondary Education (RBSE)",
+  "brand_colour": "#ad2972",
+
+  "classes": ["Nursery", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
+  "sections": ["A"],
+  "age_cutoff": "31-03-2027",
+  "grade_scale": "standard",
+
+  "upi_id": "8619190956@SBI",
+  "upi_name": "Lotus Kids Education Society",
+  "upi_qr": "upi-qr.jpeg",
+  "office_can_collect_fees": false,
+  "installments": 4,
+  "due_day": 10
+}

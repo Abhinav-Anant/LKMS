@@ -7,6 +7,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
 from core.models import SchoolProfile
+from exams.pdf import draw_logo
 
 
 def _rupees(value):
@@ -24,6 +25,7 @@ def receipt_pdf(payment) -> bytes:
     y = height - 16 * mm
 
     pdf.setTitle(f"Receipt {payment.receipt_number}")
+    draw_logo(pdf, school, left, y + 5 * mm, 14 * mm)
     pdf.setFont("Helvetica-Bold", 14)
     pdf.drawCentredString(width / 2, y, school.name)
     y -= 5 * mm

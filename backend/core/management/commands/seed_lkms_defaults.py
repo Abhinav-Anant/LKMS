@@ -1,7 +1,6 @@
-"""Create placeholder school data so the system can be tried out.
+"""Create sample school data (classes, documents, fees, subjects, periods) for trying LKMS out.
 
-Everything here is a PLACEHOLDER until Lotus Kids confirms its real classes,
-sections and document list. Safe to run more than once: existing rows are kept.
+A real school is set up with `manage.py setup_school` instead. Safe to run more than once: existing rows are kept.
 """
 
 from datetime import date, time

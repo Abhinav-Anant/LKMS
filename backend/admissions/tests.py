@@ -46,7 +46,7 @@ def test_parent_can_apply_and_gets_number_and_code(public, application_data):
     created = apply(public, application_data)
     application = AdmissionApplication.objects.get()
     assert created["application_number"] == application.application_number
-    assert application.application_number.startswith("LK-2027-28-")
+    assert application.application_number.startswith("SCH-2027-28-")
     assert application.father_phone == "9829012345"  # +91 and spaces stripped
     assert application.check_token(created["access_token"])
     assert application.consent_given_at is not None

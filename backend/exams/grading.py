@@ -1,8 +1,7 @@
 """The grading scale and co-scholastic areas.
 
-PLACEHOLDER until Lotus Kids confirms the scale it uses (see docs/BOARD_CHECKS.md).
-The school edits the scale in the app (Exams > Grade scale); these defaults are used
-only when no scale has been saved.
+The setup wizard lets a school pick one of GRADE_SCALES, and the school edits it in the
+app (Exams > Grade scale); DEFAULT_BANDS is used only when no scale has been saved.
 """
 
 from decimal import ROUND_HALF_UP, Decimal
@@ -16,6 +15,23 @@ DEFAULT_BANDS = [
     ("D", 33, "Satisfactory", True),
     ("E", 0, "Needs improvement", False),
 ]
+
+# 8-point scale used by CBSE and many state boards.
+EIGHT_POINT_BANDS = [
+    ("A1", 91, "Outstanding", True),
+    ("A2", 81, "Excellent", True),
+    ("B1", 71, "Very good", True),
+    ("B2", 61, "Good", True),
+    ("C1", 51, "Above average", True),
+    ("C2", 41, "Average", True),
+    ("D", 33, "Pass", True),
+    ("E", 0, "Needs improvement", False),
+]
+
+GRADE_SCALES = {
+    "standard": ("A+ A B C D E (pass at 33%)", DEFAULT_BANDS),
+    "eight-point": ("A1 A2 B1 B2 C1 C2 D E, as used by CBSE (pass at 33%)", EIGHT_POINT_BANDS),
+}
 
 CO_SCHOLASTIC_AREAS = ["Art and craft", "Music and dance", "Games and sports", "Discipline", "Cleanliness"]
 CO_SCHOLASTIC_GRADES = ["A", "B", "C"]

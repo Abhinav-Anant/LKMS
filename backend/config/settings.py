@@ -181,13 +181,14 @@ CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173,h
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:8080").rstrip("/")
 
 # The school's UPI account shown on the parent pay page (QR image: frontend/public/school-upi-qr.jpeg).
-SCHOOL_UPI_ID = os.getenv("SCHOOL_UPI_ID", "8619190956@SBI")
-SCHOOL_UPI_NAME = os.getenv("SCHOOL_UPI_NAME", "Lotus Kids Education Society")
+# Older installs set the UPI account here; it now lives in the school profile (School settings).
+SCHOOL_UPI_ID = os.getenv("SCHOOL_UPI_ID", "")
+SCHOOL_UPI_NAME = os.getenv("SCHOOL_UPI_NAME", "")
 PAY_LINK_MAX_AGE_DAYS = int(os.getenv("PAY_LINK_MAX_AGE_DAYS", "45"))
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "LKMS API",
-    "DESCRIPTION": "Lotus Kids Management System",
+    "DESCRIPTION": "LKMS school management system",
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,

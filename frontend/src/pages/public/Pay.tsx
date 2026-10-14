@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError, api, fetchFileUrl } from "@/lib/api";
 import { formatDate, formatMoney, todayISO } from "@/lib/labels";
+import { UPI_QR_URL } from "@/lib/school";
 import type { PayPage, PublicInvoice } from "@/lib/types";
 
-const QR_IMAGE = "/school-upi-qr.jpeg";
 const base = (token: string) => `/fees/public/pay/${encodeURIComponent(token)}`;
 
 export default function Pay() {
@@ -89,7 +89,7 @@ function ScanAndPay({ data, amount }: { data: PayPage; amount: number }) {
     <section className="space-y-3 rounded-lg border p-4" aria-labelledby="step-1">
       <h2 id="step-1" className="font-semibold">Step 1: Pay {formatMoney(amount)} by UPI</h2>
       <p className="text-sm">Scan this code with any UPI app (Google Pay, PhonePe, Paytm, BHIM or your bank's app).</p>
-      <img src={QR_IMAGE} alt={`UPI QR code for ${data.payee_name}, UPI ID ${data.upi_id}`} className="mx-auto w-full max-w-xs rounded-md border" width={1256} height={1600} />
+      <img src={UPI_QR_URL} alt={`UPI QR code for ${data.payee_name}, UPI ID ${data.upi_id}`} className="mx-auto w-full max-w-xs rounded-md border bg-white" />
       <dl className="grid grid-cols-[7rem_1fr] gap-x-2 gap-y-1 text-sm">
         <dt className="text-muted-foreground">Pay to</dt>
         <dd className="font-medium">{data.payee_name}</dd>

@@ -1,6 +1,7 @@
 """deploy/setup_wizard.py, the server settings wizard (plain Python, loaded from its file)."""
 
 import importlib.util
+import json
 import shutil
 import stat
 
@@ -38,7 +39,6 @@ FIRST_RUN = [
     "https://LKMS.lotuskids.in/", "lkms.lotuskids.in",  # a full URL is refused, then the plain address
     "", "", "short", "", "", "",                        # database: a weak password is refused, then the suggestion
     "/srv/lkms-data/", "",                              # files
-    "", "", "",                                         # UPI: keep ID, name and QR code
     "", "10", "", "22,6",                               # WhatsApp on, 10 a minute, quiet 10 pm to 6 am
     "", "", "", "rclone copy {file} gdrive:lkms",       # backups
     "",                                                 # save
@@ -64,7 +64,7 @@ def test_first_run_writes_settings(monkeypatch, wizard, repo, capsys):
     assert len(db["password"]) >= 16
     assert env["PRIVATE_MEDIA_ROOT"] == "/srv/lkms-data/private_media"
     assert env["BACKUP_DIR"] == "/srv/lkms-data/backups"
-    assert env["SCHOOL_UPI_ID"] == "8619190956@SBI"
+    assert "SCHOOL_UPI_ID" not in env  # the UPI account is a school detail now, asked by setup_school
     assert env["WHATSAPP_ENABLED"] == "false"  # switched on once the WhatsApp server gives LKMS a key
     assert (env["WHATSAPP_RATE_PER_MINUTE"], env["WHATSAPP_QUIET_HOURS"]) == ("10", "22,6")
     assert env["BACKUP_COPY_COMMAND"] == "rclone copy {file} gdrive:lkms"
@@ -85,8 +85,8 @@ def test_running_again_keeps_secrets_and_other_settings(monkeypatch, wizard, rep
     wa_first = wizard.read_env(repo / "whatsapp-server" / ".env")
     env_file.write_text(env_file.read_text() + "JWT_ACCESS_MINUTES=45\nWHATSAPP_API_KEY=lkms_key\n")
 
-    # Enter everywhere (the database password is asked hidden and kept), new UPI ID, then save.
-    rerun = [""] * 2 + [""] * 3 + [""] * 2 + ["school@okaxis", "", ""] + [""] * 4 + [""] * 4 + ["", "n", "n"]
+    # Enter everywhere (the database password is asked hidden and kept), then save.
+    rerun = [""] * 2 + [""] * 3 + [""] * 2 + [""] * 4 + [""] * 4 + ["", "n", "n"]
     left = answer(monkeypatch, wizard, rerun, secrets=[""])
     assert wizard.main(["--repo", str(repo)]) == 0
     assert next(left, None) is None
@@ -94,7 +94,6 @@ def test_running_again_keeps_secrets_and_other_settings(monkeypatch, wizard, rep
     env = wizard.read_env(env_file)
     for key in ("DJANGO_SECRET_KEY", "DATABASE_URL", "DJANGO_ALLOWED_HOSTS", "WHATSAPP_QUIET_HOURS"):
         assert env[key] == first[key]
-    assert env["SCHOOL_UPI_ID"] == "school@okaxis"
     assert env["JWT_ACCESS_MINUTES"] == "45"
     assert env["WHATSAPP_ENABLED"] == "true"  # it has a key now
     assert wizard.read_env(repo / "whatsapp-server" / ".env")["JWT_SECRET"] == wa_first["JWT_SECRET"]
@@ -108,29 +107,41 @@ def test_not_saving_changes_nothing(monkeypatch, wizard, repo):
     assert not (repo / "backend" / ".env").exists()
 
 
-def test_new_qr_code_must_be_a_jpeg(monkeypatch, wizard, repo, tmp_path, capsys):
-    (repo / "frontend" / "public").mkdir(parents=True)
-    png, jpeg = tmp_path / "qr.png", tmp_path / "qr.jpg"
-    png.write_bytes(b"\x89PNG\r\n")
-    jpeg.write_bytes(b"\xff\xd8\xff\xe0 qr")
-    answers = FIRST_RUN[:10] + ["", "", str(png), str(jpeg)] + FIRST_RUN[13:]
-    answer(monkeypatch, wizard, answers)
-    assert wizard.main(["--repo", str(repo)]) == 0
-    assert (repo / "frontend" / "public" / "school-upi-qr.jpeg").read_bytes() == jpeg.read_bytes()
-    assert "not a JPEG" in capsys.readouterr().out
+def test_school_answers_file_suggests_the_answers(monkeypatch, wizard, repo, capsys):
+    school = settings.BASE_DIR.parent / "examples" / "green-valley" / "school.json"
+    # Enter for everything: the address and the data folder come from the file; WhatsApp is off there.
+    answers = [""] * 6 + [""] * 2 + [""] + [""] * 4 + ["", "n", "n"]
+    left = answer(monkeypatch, wizard, answers)
+    assert wizard.main(["--repo", str(repo), "--school", str(school)]) == 0
+    assert next(left, None) is None
+    env = wizard.read_env(repo / "backend" / ".env")
+    assert env["DJANGO_ALLOWED_HOSTS"] == "erp.greenvalleyschool.in"
+    assert env["WHATSAPP_ENABLED"] == "false"
+    assert not (repo / "whatsapp-server" / ".env").exists()
+
+
+def test_school_answers_and_pictures_are_staged_for_the_app_user(wizard, tmp_path):
+    runner = wizard.Runner(tmp_path, dry_run=False)
+    school = settings.BASE_DIR.parent / "examples" / "lotus-kids" / "school.json"
+    staged = wizard.stage_answers(runner, school, tmp_path / "data")
+    data = json.loads(staged.read_text())
+    assert data["upi_qr"] == "upi-qr.jpeg" and (staged.parent / "upi-qr.jpeg").exists()
+    assert data["name"] == "Lotus Kids School"
 
 
 def test_dry_run_as_root_only_shows_commands(monkeypatch, wizard, repo, capsys):
     answers = FIRST_RUN[:-2] + ["y", "y", "y", "y"]  # database, WhatsApp, install, school details
     answer(monkeypatch, wizard, answers)
+    school = settings.BASE_DIR.parent / "examples" / "lotus-kids" / "school.json"
     monkeypatch.setattr(wizard.os, "geteuid", lambda: 0)
     monkeypatch.setattr(wizard.shutil, "which", lambda name: f"/usr/bin/{name}")
     monkeypatch.setattr(wizard.subprocess, "run", lambda *a, **k: pytest.fail("ran a command in a dry run"))
-    assert wizard.main(["--repo", str(repo), "--dry-run"]) == 0
+    assert wizard.main(["--repo", str(repo), "--dry-run", "--school", str(school)]) == 0
     assert not (repo / "backend" / ".env").exists()
     out = capsys.readouterr().out
     for command in ("runuser -u postgres -- psql", "docker compose up -d --build whatsapp",
-                    "runuser -u lkms -- .venv/bin/python manage.py migrate", "manage.py setup_school"):
+                    "runuser -u lkms -- .venv/bin/python manage.py migrate",
+                    "manage.py setup_school --answers /srv/lkms-data/setup/school.json"):
         assert command in out
 
 

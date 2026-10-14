@@ -41,7 +41,7 @@ Change these in `backend/core/permissions.py` if the school works differently (e
 ## Paying online: the school's UPI QR code
 
 The school takes online fees only through its own UPI QR code
-(Lotus Kids Education Society, UPI ID `8619190956@SBI`). There is no payment gateway, so LKMS cannot
+(set under **School settings > Fee payments**, or by the setup wizard). There is no payment gateway, so LKMS cannot
 see these payments by itself: the parent sends the payment receipt and the school checks it.
 
 1. Staff open an invoice and click **Create link**, then send it to the parent (WhatsApp, SMS). The link
@@ -61,8 +61,13 @@ see these payments by itself: the parent sends the payment receipt and the schoo
    rejected. Every report, screenshot view, approval and rejection is in the audit log.
 6. After approval the parent can download the school receipt from the same link.
 
-The QR image is `frontend/public/school-upi-qr.jpeg`. The UPI ID and payee name shown next to it come from
-`SCHOOL_UPI_ID` and `SCHOOL_UPI_NAME` in `backend/.env`. If the school's account changes, update all three.
+The UPI ID, account name and QR code are in **School settings > Fee payments**. If the school uploads its bank's QR
+picture, parents see that; otherwise LKMS draws a standard UPI QR code from the UPI ID (`/api/v1/school/upi-qr/`),
+which every UPI app can scan. Installs made before this setting existed keep the `SCHOOL_UPI_ID` and
+`SCHOOL_UPI_NAME` from `backend/.env`: they are copied into School settings when the database is updated.
+
+Whether office staff may record cash or cheque payments, and how many days before the due date (and how often
+after it) WhatsApp fee reminders go out, are also in **School settings > Fee payments**.
 
 ### Scheduled job (cron on the server)
 

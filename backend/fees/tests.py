@@ -9,6 +9,7 @@ from django.utils import timezone
 from academics.models import AcademicSession, Enrollment, SchoolClass, Section
 from conftest import png_file
 from core.models import AuditLog
+from core.models import SchoolProfile
 from fees import upi
 from fees.models import Concession, FeeHead, Installment, Invoice, Payment, UpiSubmission
 from students.models import Guardian, Student, StudentGuardian
@@ -210,6 +211,8 @@ def report(public, invoice, utr="412345678901", amount=None, file=None, **extra)
 
 
 def test_pay_page_shows_school_upi_without_login(public, invoice):
+    SchoolProfile.objects.filter(pk=SchoolProfile.get().pk).update(
+        upi_id="8619190956@SBI", upi_name="Lotus Kids Education Society")
     response = public.get(pay_url(invoice))
     assert response.status_code == 200
     assert response.data["upi_id"] == "8619190956@SBI"

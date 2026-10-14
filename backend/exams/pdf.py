@@ -1,10 +1,11 @@
-"""Report card PDF. PLACEHOLDER layout until the school gives its approved format."""
+"""Report card PDF in a standard layout: school header, marks by subject and term, grades, remarks."""
 
 import io
 
 from django.utils import timezone
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 from core.models import SchoolProfile
@@ -13,7 +14,21 @@ from .grading import CO_SCHOLASTIC_AREAS, bands
 from .report import num
 
 
+def draw_logo(pdf, school, x, top, size):
+    """Draw the school's logo with its top-left corner at (x, top). Returns False when there is none."""
+    if not school.logo:
+        return False
+    try:
+        with school.logo.open("rb") as handle:
+            image = ImageReader(io.BytesIO(handle.read()))
+        pdf.drawImage(image, x, top - size, width=size, height=size, preserveAspectRatio=True, mask="auto")
+    except Exception:  # a missing or damaged logo must never stop a report card printing
+        return False
+    return True
+
+
 def school_header(pdf, school, width, y):
+    draw_logo(pdf, school, 12 * mm, y + 6 * mm, 18 * mm)
     pdf.setFont("Helvetica-Bold", 16)
     pdf.drawCentredString(width / 2, y, school.name)
     y -= 5.5 * mm

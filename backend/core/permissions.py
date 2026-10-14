@@ -37,12 +37,23 @@ CAPABILITIES = {
 }
 
 
+def roles_for(capability):
+    """The roles holding a capability, including the school's own choices in its profile."""
+    roles = CAPABILITIES.get(capability, set())
+    if capability == "fees.collect":
+        from .models import SchoolProfile
+
+        if SchoolProfile.get().office_can_collect_fees:
+            roles = roles | {"office"}
+    return roles
+
+
 def has_capability(user, capability):
     if not user or not user.is_authenticated or not user.is_active:
         return False
     if user.is_superuser:
         return True
-    return user.role in CAPABILITIES.get(capability, set())
+    return user.role in roles_for(capability)
 
 
 def Can(capability):

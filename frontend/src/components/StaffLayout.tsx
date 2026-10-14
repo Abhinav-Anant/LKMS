@@ -2,8 +2,10 @@ import { KeyRound, LogOut } from "lucide-react";
 import { Link, NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { SchoolName } from "@/components/SchoolName";
 import { useAuth } from "@/lib/auth";
 import { ROLE_LABELS } from "@/lib/labels";
+import { useBranding } from "@/lib/school";
 import { cn } from "@/lib/utils";
 import ChangePassword from "@/pages/staff/ChangePassword";
 
@@ -13,6 +15,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
 export function StaffLayout() {
   const { user, loading, signOut, can } = useAuth();
   const location = useLocation();
+  const school = useBranding();
 
   if (loading) return <p className="p-8 text-muted-foreground">Loading…</p>;
   if (!user) return <Navigate to="/staff/login" replace state={{ from: location.pathname }} />;
@@ -26,7 +29,7 @@ export function StaffLayout() {
         <div className="container flex flex-wrap items-center justify-between gap-2 py-3">
           <div className="flex flex-wrap items-center gap-4">
             <Link to="/staff" className="text-lg font-semibold text-primary">
-              LKMS
+              <SchoolName school={school} />
             </Link>
             {!user.must_change_password && (
               <nav aria-label="Staff" className="flex flex-wrap gap-1">
@@ -83,6 +86,11 @@ export function StaffLayout() {
                 {can("academics.manage") && (
                   <NavLink to="/staff/setup" className={navClass}>
                     School setup
+                  </NavLink>
+                )}
+                {can("school.manage") && (
+                  <NavLink to="/staff/school" className={navClass}>
+                    School settings
                   </NavLink>
                 )}
                 {can("users.manage") && (

@@ -1,8 +1,8 @@
 # Setting up LKMS on a server
 
 This guide puts LKMS on one rented Linux server (a VPS) so staff and parents can use it at your own web address,
-for example `https://lkms.lotuskids.in`. Follow the steps in order. Every command is typed on the server unless it
-says otherwise. Where you see `lkms.lotuskids.in`, use your real address.
+for example `https://erp.yourschool.in`. Follow the steps in order. Every command is typed on the server unless it
+says otherwise. Where you see `erp.yourschool.in`, use your real address.
 
 Expect it to take an afternoon. Someone comfortable with a Linux command line should do it; nothing here needs
 programming.
@@ -28,7 +28,7 @@ The config files for all of these are in the `deploy/` folder of the code.
 - **A VPS** running **Ubuntu 24.04 LTS**: 2 CPUs, 4 GB RAM, at least 40 GB disk. Pick a data centre in India
   (for example Mumbai) so the site is fast and student data stays in the country. Any provider works
   (DigitalOcean, AWS Lightsail, Hetzner, E2E Networks and others).
-- **A domain name** you control, e.g. `lotuskids.in`. In its DNS settings, add an **A record** for `lkms`
+- **A domain name** you control, e.g. `yourschool.in`. In its DNS settings, add an **A record** for `erp`
   (or whatever name you choose) pointing to the server's IP address. Do this first: it can take up to an hour to work.
 - **The school's WhatsApp phone** for step 7 (a number used normally for a while, not a brand-new SIM).
 - **Access to the GitHub repository** `Abhinav-Anant/LKMS`.
@@ -133,15 +133,21 @@ suggested answer in `[brackets]` (press Enter to accept it). Then it offers to d
 sudo python3 /srv/lkms/deploy/setup_wizard.py
 ```
 
+If you filled in an **answers file** for this school beforehand (see `NEW_SCHOOL.md`), give it to the wizard and
+its answers become the suggestions, so you mostly press Enter:
+
+```bash
+sudo python3 /srv/lkms/deploy/setup_wizard.py --school /root/greenvalley/school.json
+```
+
 **Part 1, settings.** It asks for:
 
 | Question | Example |
 | --- | --- |
-| Website address | `lkms.lotuskids.in` |
+| Website address | `erp.yourschool.in` |
 | Database name, user, password, server and port | press Enter for each; a random password is suggested |
 | Folder for documents and backups | `/srv/lkms-data` |
 | Largest upload in MB | 5 |
-| School UPI ID, account name and (optionally) a new QR picture | `8619190956@SBI`, Lotus Kids Education Society |
 | WhatsApp alerts on or off; messages per minute, per parent per day, quiet hours | yes, 8, 6, `21,7` |
 | Backups to keep (daily, weekly, monthly) and an optional off-site copy command | 14, 8, 12 |
 
@@ -154,22 +160,23 @@ random secrets, if WhatsApp is on), readable only by `lkms`. The Django secret k
 2. Creates the database user and database (or updates the password).
 3. Starts the WhatsApp server in Docker and connects LKMS to it.
 4. Installs LKMS: Python and web packages, database tables, the website build, and Django's safety checks.
-5. Asks for **the school's details**, again one at a time: name, address, PIN code, phone, UDISE+ code, board,
-   admission-number format, the school year's dates, the classes and sections, the fee structure (how often fees
-   are collected, the due day, and the tuition, admission, annual, exam and any other fee, either the same for every
-   class or class by class), and the **administrator login** (username and password).
+5. Asks for **the school's details**, again one at a time (the full list is in `NEW_SCHOOL.md`): name, address,
+   board, logo and colour, admission-number format, the school year and age check date, classes, sections and age
+   limits, subjects, bell times, admission documents, grade scale, the UPI account and QR code, who may take cash,
+   fee reminders, the fee structure (how often fees are collected, the due day, and the tuition, admission, annual,
+   exam and any other fee, the same for every class or class by class), the **administrator login**, and the first
+   staff logins (principal, office, teachers), each with a temporary password.
 6. Turns on the website, gets the free HTTPS certificate (it asks for an email for expiry notices), and starts the
    nightly backup, the morning fee reminders and the WhatsApp sender. The DNS record from step 1 must already
    point at the server.
 
-When it finishes, open `https://lkms.lotuskids.in/staff/login` and sign in as the administrator. Under **Users**, add
-the principal, office, accountant and teachers (each gets a temporary password and must change it at first
-sign-in). Under **School setup**, check the subjects, periods, admission documents and grade scale: standard ones
-were filled in.
+When it finishes, open `https://erp.yourschool.in/staff/login` and sign in as the administrator. Everything the wizard asked can be
+changed later in the app: **School settings** (details, logo, colour, UPI, fee rules), **School setup** (classes,
+subjects, bell times), **Fees > Setup**, **Exams > Grade scale** and **Users**.
 
 If a step fails, the wizard says what went wrong and stops. Fix it and run the wizard again: everything you
 answered is kept and offered as the default, and the secret key and passwords are not changed unless you type new
-ones. Run it again the same way whenever a setting changes (for example a new UPI ID), and answer **n** to the
+ones. Run it again the same way whenever a setting changes (for example a new domain), and answer **n** to the
 steps that are already done. To see what it would do without changing anything, add `--dry-run`. To change only the
 school's details: `cd /srv/lkms/backend && sudo -u lkms .venv/bin/python manage.py setup_school`.
 
@@ -230,7 +237,7 @@ If the WhatsApp server code changed (`whatsapp-server/`), also run
 
 | Problem | Look here |
 | --- | --- |
-| Site does not load at all | `sudo nginx -t`, `sudo systemctl status nginx`, and that the DNS A record points at this server (`ping lkms.lotuskids.in`) |
+| Site does not load at all | `sudo nginx -t`, `sudo systemctl status nginx`, and that the DNS A record points at this server (`ping erp.yourschool.in`) |
 | "502 Bad Gateway" | the back end is not running: `sudo journalctl -u lkms-web -n 50` |
 | "400 Bad Request" on every page | `DJANGO_ALLOWED_HOSTS` in `backend/.env` does not match the address; fix it and `sudo systemctl restart lkms-web` |
 | Sign-in works but saving fails with a CSRF error | `DJANGO_CSRF_TRUSTED_ORIGINS` must be `https://` plus the address |
@@ -280,13 +287,13 @@ Change these lines (leave the rest as they are):
 ```
 DJANGO_DEBUG=false
 DJANGO_SECRET_KEY=          <- paste the output of: python3 -c "import secrets; print(secrets.token_urlsafe(50))"
-DJANGO_ALLOWED_HOSTS=lkms.lotuskids.in
-DJANGO_CSRF_TRUSTED_ORIGINS=https://lkms.lotuskids.in
-CORS_ALLOWED_ORIGINS=https://lkms.lotuskids.in
+DJANGO_ALLOWED_HOSTS=erp.yourschool.in
+DJANGO_CSRF_TRUSTED_ORIGINS=https://erp.yourschool.in
+CORS_ALLOWED_ORIGINS=https://erp.yourschool.in
 DATABASE_URL=postgres://lkms:THE-DATABASE-PASSWORD@localhost:5432/lkms
 PRIVATE_MEDIA_ROOT=/srv/lkms-data/private_media
 BACKUP_DIR=/srv/lkms-data/backups
-FRONTEND_BASE_URL=https://lkms.lotuskids.in
+FRONTEND_BASE_URL=https://erp.yourschool.in
 ```
 
 Keep a copy of this file in a password manager: it is not in the backups, and the secret key and passwords are
@@ -299,10 +306,7 @@ cd /srv/lkms/backend
 sudo -u lkms uv sync --frozen --no-dev
 sudo -u lkms .venv/bin/python manage.py migrate
 sudo -u lkms .venv/bin/python manage.py collectstatic --noinput
-sudo -u lkms .venv/bin/python manage.py seed_lkms_defaults
-sudo -u lkms .venv/bin/python manage.py createsuperuser       # your administrator login, e.g. username "abhinav"
-sudo -u lkms .venv/bin/python manage.py shell -c \
-  "from users.models import User; User.objects.filter(username='abhinav').update(role='admin')"
+sudo -u lkms .venv/bin/python manage.py setup_school          # the school's details and the administrator login
 sudo -u lkms .venv/bin/python manage.py check --deploy
 
 cd /srv/lkms/frontend
@@ -310,9 +314,8 @@ sudo -u lkms npm ci --no-audit --no-fund
 sudo -u lkms npm run build
 ```
 
-The `shell -c` line gives that login the Administrator role (put in the username you chose).
-`seed_lkms_defaults` creates the placeholder classes, subjects, periods, fee heads and grade scale; the school
-changes them later in the app. `check --deploy` may show one warning about `SECURE_HSTS_PRELOAD`; that one is fine.
+`setup_school` asks the school's questions one at a time (add `--answers school.json` to use an answers file, see
+`NEW_SCHOOL.md`). `check --deploy` may show one warning about `SECURE_HSTS_PRELOAD`; that one is fine.
 
 ### Start the website with HTTPS
 
@@ -325,26 +328,27 @@ sudo systemctl status lkms-web          # should say "active (running)"
 
 # The web server
 sudo cp /srv/lkms/deploy/nginx-lkms.conf /etc/nginx/sites-available/lkms
-sudo sed -i 's/school.example.in/lkms.lotuskids.in/' /etc/nginx/sites-available/lkms
+sudo sed -i 's/school.example.in/erp.yourschool.in/' /etc/nginx/sites-available/lkms
 sudo ln -s /etc/nginx/sites-available/lkms /etc/nginx/sites-enabled/lkms
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
 # The HTTPS certificate (free, from Let's Encrypt; renews itself)
-sudo certbot --nginx -d lkms.lotuskids.in --redirect -m office@lotuskids.in --agree-tos
+sudo certbot --nginx -d erp.yourschool.in --redirect -m office@yourschool.in --agree-tos
 ```
 
-Open `https://lkms.lotuskids.in` in a browser: the school's home page should load with a padlock. Then go to
-`https://lkms.lotuskids.in/staff/login` and sign in with the administrator created above.
+Open `https://erp.yourschool.in` in a browser: the school's home page should load with a padlock. Then go to
+`https://erp.yourschool.in/staff/login` and sign in with the administrator created above.
 
 If something does not load, see **Troubleshooting** at the end.
 
 ### Set up the school in the app
 
-Signed in as administrator:
+Run `sudo -u lkms .venv/bin/python manage.py setup_school` in `/srv/lkms/backend` (the same questions as the wizard),
+or, signed in as administrator:
 
-1. `https://lkms.lotuskids.in/admin/` > **School profile**: the school's name, address, phone, UDISE+ code,
-   affiliation number and admission-number format.
+1. **School settings**: the school's name, address, phone, UDISE+ code, board, logo, colour, admission-number
+   format, UPI account and fee rules.
 2. **School setup**: sessions, classes, sections, subjects, periods and class teachers.
 3. **Fees > Setup**: the real fee heads and amounts (the seeded ones are placeholders).
 4. **Users**: add the principal, office, accountant and teachers. Each gets a temporary password and must change it
@@ -422,3 +426,7 @@ The setup wizard was then run on the same machine as root, answering each questi
 created the folders and a new database, wrote `backend/.env`, installed LKMS, saved the school's details,
 fees and administrator, and the administrator could sign in. Its last step (systemd, Nginx, certbot) runs the
 same commands as the manual steps above; it was checked with `--dry-run` only.
+
+On 14 Oct 2026 the wizard was run again on that machine with `--school examples/green-valley/school.json`: it
+created a new database, installed LKMS and set up the sample school from the answers file (classes, subjects, bell
+times, 12 monthly installments with per-class tuition and a transport fee, administrator and staff logins).

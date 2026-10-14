@@ -1,0 +1,63 @@
+{
+  "domain": "erp.greenvalleyschool.in",
+  "data_dir": "/srv/lkms-data",
+  "whatsapp": false,
+
+  "name": "Green Valley Public School",
+  "short_code": "GVPS",
+  "address": "Plot 14, Sector 5, Vidhyadhar Nagar",
+  "district": "Jaipur",
+  "state": "Rajasthan",
+  "pincode": "302039",
+  "phone": "0141 2330000",
+  "email": "office@greenvalleyschool.in",
+  "website": "https://greenvalleyschool.in",
+  "udise_code": "08121200101",
+  "board": "cbse",
+  "affiliation_number": "1730099",
+  "admission_number_prefix": "GV/",
+  "admission_number_width": 5,
+  "next_admission_number": 1201,
+  "brand_colour": "green",
+
+  "classes": ["Pre-Nursery", "Nursery", "KG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5"],
+  "sections": ["A", "B"],
+  "capacity": 35,
+  "age_limits": {"Pre-Nursery": [2, 3], "Nursery": [3, 4], "KG": [4, 5]},
+  "age_cutoff": "31-03-2027",
+  "subjects": ["English", "Hindi", "Mathematics", "EVS", "Computer", "Art", "Physical Education"],
+  "first_period": "08:30",
+  "period_minutes": 35,
+  "periods": 7,
+  "break_after": 4,
+  "break_minutes": 25,
+  "documents": [
+    {"name": "Birth certificate", "required": true},
+    {"name": "Passport-size photograph of the child", "required": true},
+    {"name": "Parent's ID proof", "required": true},
+    {"name": "Previous class report card", "required": false}
+  ],
+  "grade_scale": "eight-point",
+
+  "upi_id": "greenvalley@okhdfcbank",
+  "upi_name": "Green Valley Education Trust",
+  "office_can_collect_fees": true,
+  "fee_reminder_days_before": 5,
+  "fee_reminder_every_days": 10,
+  "installments": 12,
+  "due_day": 7,
+  "fee.tuition": {"Pre-Nursery": 1800, "Nursery": 1800, "KG": 2000, "Class 1": 2400, "Class 2": 2400,
+                  "Class 3": 2600, "Class 4": 2600, "Class 5": 2800},
+  "fee.admission": 10000,
+  "fee.annual": 6000,
+  "fee.exam": 1200,
+  "fee.extra": [{"name": "Transport fee", "every": true, "amount": 900}],
+
+  "admin.username": "gvadmin",
+  "admin.first_name": "Meenakshi",
+  "admin.last_name": "Rao",
+  "staff": [
+    {"name": "Suresh Gupta", "role": "principal", "phone": "9829000101"},
+    {"name": "Anita Verma", "role": "office", "phone": "9829000102"}
+  ]
+}

@@ -1,30 +1,62 @@
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models, transaction
+
+from .storage import RandomPath, get_private_storage
+
+HEX_COLOUR = RegexValidator(r"^#[0-9a-fA-F]{6}$", "Use a colour code like #1d4ed8.")
 
 
 class SchoolProfile(models.Model):
     """The single school this installation serves. Only one row is allowed."""
 
     BOARD_CHOICES = [
-        ("rbse", "Rajasthan Board (RBSE)"),
         ("cbse", "CBSE"),
+        ("icse", "CISCE (ICSE)"),
+        ("state", "State board"),
         ("other", "Other / not affiliated"),
     ]
 
-    name = models.CharField(max_length=200, default="Lotus Kids School")
+    name = models.CharField(max_length=200, default="Your School Name")
     short_code = models.CharField(
-        max_length=10, default="LK", help_text="Used as the prefix of application numbers, e.g. LK"
+        max_length=10, default="SCH", help_text="Used as the prefix of application numbers, e.g. SCH"
     )
     address = models.TextField(blank=True)
     district = models.CharField(max_length=100, blank=True)
-    state = models.CharField(max_length=100, default="Rajasthan")
+    state = models.CharField(max_length=100, blank=True)
     pincode = models.CharField(max_length=6, blank=True)
     phone = models.CharField(max_length=15, blank=True)
     email = models.EmailField(blank=True)
     website = models.URLField(blank=True)
     udise_code = models.CharField("UDISE+ code", max_length=11, blank=True)
-    board = models.CharField(max_length=10, choices=BOARD_CHOICES, default="rbse")
+    board = models.CharField(max_length=10, choices=BOARD_CHOICES, default="state")
+    board_name = models.CharField(
+        max_length=100, blank=True, help_text="Full name of the board, e.g. Rajasthan Board of Secondary Education"
+    )
     affiliation_number = models.CharField(max_length=50, blank=True)
+
+    # Look
+    logo = models.FileField(upload_to=RandomPath("school"), storage=get_private_storage, blank=True)
+    brand_colour = models.CharField(
+        max_length=7, default="#1d4ed8", validators=[HEX_COLOUR], help_text="Main colour of the website, e.g. #1d4ed8"
+    )
+
+    # Fees
+    upi_id = models.CharField("UPI ID", max_length=100, blank=True, help_text="Shown to parents on the payment page")
+    upi_name = models.CharField("UPI account name", max_length=100, blank=True)
+    upi_qr = models.FileField(
+        "UPI QR code", upload_to=RandomPath("school"), storage=get_private_storage, blank=True,
+        help_text="The bank's QR picture. Leave empty to show a QR code made from the UPI ID.",
+    )
+    office_can_collect_fees = models.BooleanField(
+        default=False, help_text="Office staff may record fees paid at the office (cash, cheque)"
+    )
+    fee_reminder_days_before = models.PositiveSmallIntegerField(
+        default=3, help_text="Send a WhatsApp reminder this many days before a fee is due"
+    )
+    fee_reminder_every_days = models.PositiveSmallIntegerField(
+        default=7, help_text="Repeat the reminder every this many days while a fee is overdue"
+    )
 
     admission_number_prefix = models.CharField(
         max_length=10, blank=True, help_text="Optional text before the admission (S.R.) number"
@@ -56,6 +88,18 @@ class SchoolProfile(models.Model):
     def get(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+    @property
+    def board_label(self):
+        return self.board_name or self.get_board_display()
+
+    @property
+    def payment_upi_id(self):
+        return self.upi_id or settings.SCHOOL_UPI_ID
+
+    @property
+    def payment_upi_name(self):
+        return self.upi_name or settings.SCHOOL_UPI_NAME or self.name
 
     @classmethod
     def allocate_admission_number(cls):

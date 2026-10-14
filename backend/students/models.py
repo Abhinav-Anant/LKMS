@@ -35,7 +35,7 @@ class Student(models.Model):
     address_line = models.TextField()
     city = models.CharField(max_length=100)
     district = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, default="Rajasthan")
+    state = models.CharField(max_length=100, blank=True)
     pincode = models.CharField(max_length=6, validators=[validate_pincode])
 
     previous_school = models.CharField(max_length=200, blank=True)

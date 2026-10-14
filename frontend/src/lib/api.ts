@@ -9,6 +9,9 @@
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
 const REFRESH_KEY = "lkms.refresh";
 
+/** Full URL of an API path, for <img src> and links. */
+export const apiUrl = (path: string) => `${BASE}${path}`;
+
 export class ApiError extends Error {
   constructor(
     public status: number,

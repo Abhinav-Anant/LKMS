@@ -1,6 +1,13 @@
-# Lotus Kids Management System (LKMS)
+# LKMS school management system
 
-School management system for Lotus Kids School, Rajasthan.
+A ready-to-install school management system for Indian schools: online admissions, student records, fees by UPI QR
+code, attendance, marks, report cards, transfer certificates, WhatsApp alerts to parents and nightly backups.
+
+Each school gets its own installation (its own server or VPS, database and web address). A setup wizard asks every
+question a new school needs, one at a time, and sets the server up: see `docs/NEW_SCHOOL.md`. Nothing is tied to
+one school: the name, logo, colour, board, classes, fees and UPI account all come from the wizard and can be
+changed later in **School settings**. `examples/` holds ready answers for Lotus Kids School (the first school) and
+a sample CBSE school.
 
 ## Layout
 
@@ -14,9 +21,11 @@ School management system for Lotus Kids School, Rajasthan.
 - `docs/WHATSAPP.md` – WhatsApp alerts: what is sent, safety limits, opt-outs and server setup
 - `docs/EXAMS.md` – exam terms, report cards, transfer certificates and school-wide reports
 - `docs/DEPLOY.md` – step-by-step setup on a server (Ubuntu VPS, PostgreSQL, Nginx, HTTPS, WhatsApp, backups)
+- `docs/NEW_SCHOOL.md` – setting LKMS up for a new school: what to collect from the school, the answers file, the wizard
 - `deploy/setup_wizard.py` – asks for every setting and the school's details one question at a time, then sets up the server (`DEPLOY.md` step 6)
+- `examples/` – answers files for the setup wizard (Lotus Kids School, and a sample CBSE school)
 - `docs/BACKUPS.md` – nightly backups, retention, off-site copies and how to restore
-- `docs/BOARD_CHECKS.md` – placeholder formats the school and the Rajasthan board still need to confirm
+- `docs/BOARD_CHECKS.md` – standard formats each school and its board should confirm (TC, report card, grades)
 
 ## Running the backend locally (Windows, PowerShell)
 
@@ -28,8 +37,8 @@ cd backend
 copy .env.example .env                # then edit if needed
 uv sync
 uv run python manage.py migrate
-uv run python manage.py seed_lkms_defaults   # placeholder classes, sections, documents, fees, subjects, periods
-uv run python manage.py createsuperuser
+uv run python manage.py setup_school --answers ../examples/lotus-kids/school.json   # the school's details, asked one by one
+# or, for sample data without questions: uv run python manage.py seed_lkms_defaults, then createsuperuser
 uv run python manage.py runserver
 ```
 

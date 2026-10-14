@@ -13,6 +13,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from core import audit
+from core.models import SchoolProfile
 from core.notify import notify
 
 from . import services
@@ -41,7 +42,8 @@ def pay_link(invoice):
 
 
 def upi_details():
-    return {"upi_id": settings.SCHOOL_UPI_ID, "payee_name": settings.SCHOOL_UPI_NAME}
+    school = SchoolProfile.get()
+    return {"upi_id": school.payment_upi_id, "payee_name": school.payment_upi_name}
 
 
 def pending_amount(invoice):

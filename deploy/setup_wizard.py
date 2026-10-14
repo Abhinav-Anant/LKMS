@@ -16,6 +16,7 @@ it works before LKMS itself is installed.
 
 import argparse
 import getpass
+import json
 import os
 import re
 import secrets
@@ -35,7 +36,6 @@ APP_USER = "lkms"
 URL_SAFE = re.compile(r"^[A-Za-z0-9_.~-]+$")
 DB_NAME = re.compile(r"^[a-z_][a-z0-9_]{0,30}$")
 DOMAIN = re.compile(r"^(?=.{4,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$")
-UPI_ID = re.compile(r"^[A-Za-z0-9._-]{2,}@[A-Za-z]{2,}$")
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -101,7 +101,7 @@ def whole_number(low, high):
 
 def check_domain(value):
     if not DOMAIN.match(value):
-        return "Type only the address, like lkms.lotuskids.in (no https://, no slash at the end)."
+        return "Type only the address, like erp.yourschool.in (no https://, no slash at the end)."
     return None
 
 
@@ -119,10 +119,6 @@ def check_absolute(value):
     return None if value.startswith("/") else "Type a full path starting with /."
 
 
-def check_upi(value):
-    return None if UPI_ID.match(value) else "A UPI ID looks like name@bank, for example 8619190956@SBI."
-
-
 def check_quiet_hours(value):
     parts = value.split(",")
     if len(parts) != 2 or not all(p.strip().isdigit() and 0 <= int(p) <= 23 for p in parts):
@@ -130,20 +126,8 @@ def check_quiet_hours(value):
     return None
 
 
-def check_jpeg(value):
-    if not value:
-        return None
-    path = Path(value).expanduser()
-    if not path.is_file():
-        return "No file there. Type the full path, or press Enter to keep the current QR code."
-    with path.open("rb") as handle:
-        if handle.read(3) != b"\xff\xd8\xff":
-            return "That is not a JPEG picture. Save the QR code as .jpg and try again."
-    return None
-
-
 def check_email(value):
-    return None if EMAIL.match(value) else "Type an email address, like office@lotuskids.in."
+    return None if EMAIL.match(value) else "Type an email address, like office@yourschool.in."
 
 
 # ---------------------------------------------------------------- .env files
@@ -169,8 +153,6 @@ BACKEND_LAYOUT = [
                  "CORS_ALLOWED_ORIGINS", "FRONTEND_BASE_URL"]),
     ("Database", ["DATABASE_URL"]),
     ("Files", ["PRIVATE_MEDIA_ROOT", "MAX_UPLOAD_SIZE_MB", "LOG_LEVEL"]),
-    ("School UPI account shown to parents (the QR image is frontend/public/school-upi-qr.jpeg)",
-     ["SCHOOL_UPI_ID", "SCHOOL_UPI_NAME"]),
     ("WhatsApp alerts (docs/WHATSAPP.md)", ["WHATSAPP_ENABLED", "WHATSAPP_API_URL", "WHATSAPP_API_KEY",
                                             "WHATSAPP_RATE_PER_MINUTE", "WHATSAPP_DAILY_LIMIT_PER_NUMBER",
                                             "WHATSAPP_QUIET_HOURS"]),
@@ -236,8 +218,6 @@ def backend_values(answers, current):
         "PRIVATE_MEDIA_ROOT": f"{answers['data_dir']}/private_media",
         "MAX_UPLOAD_SIZE_MB": answers["max_upload_mb"],
         "LOG_LEVEL": current.get("LOG_LEVEL") or "INFO",
-        "SCHOOL_UPI_ID": answers["upi_id"],
-        "SCHOOL_UPI_NAME": answers["upi_name"],
         "WHATSAPP_ENABLED": "true" if answers["whatsapp"] and current.get("WHATSAPP_API_KEY") else "false",
         "WHATSAPP_API_URL": current.get("WHATSAPP_API_URL") or "http://127.0.0.1:3001",
         "WHATSAPP_API_KEY": current.get("WHATSAPP_API_KEY", ""),
@@ -285,7 +265,8 @@ def chown(path, owner):
 # ---------------------------------------------------------------- questions
 
 
-def ask_settings(current, whatsapp_set_up=False):
+def ask_settings(current, whatsapp_set_up=False, school=None):
+    school = school or {}
     db = parse_database_url(current.get("DATABASE_URL", ""))
     answers = {}
 
@@ -296,9 +277,9 @@ def ask_settings(current, whatsapp_set_up=False):
     print("\n-- 1. Website address --")
     answers["domain"] = ask(
         "What address will people type to open LKMS?",
-        "The domain or sub-domain bought for the school, without https://, for example lkms.lotuskids.in. "
+        "The domain or sub-domain bought for the school, without https://, for example erp.yourschool.in. "
         "Its DNS 'A record' must point at this server's IP address before HTTPS can be switched on.",
-        default=first_domain(current.get("DJANGO_ALLOWED_HOSTS", "")),
+        default=first_domain(current.get("DJANGO_ALLOWED_HOSTS", "")) or school.get("domain", ""),
         check=lambda v: check_domain(v.lower()),
     ).lower()
 
@@ -325,31 +306,21 @@ def ask_settings(current, whatsapp_set_up=False):
         "Folder for uploaded documents and backups?",
         "Students' documents go in its 'private_media' folder and backups in its 'backups' folder. Only LKMS can "
         "read it. Choose a disk with plenty of room.",
-        default=media.rsplit("/private_media", 1)[0] if media.endswith("/private_media") else "/srv/lkms-data",
+        default=media.rsplit("/private_media", 1)[0] if media.endswith("/private_media") else
+        school.get("data_dir", "/srv/lkms-data"),
         check=check_absolute,
     ).rstrip("/")
     answers["max_upload_mb"] = ask("Largest document a parent or staff member may upload, in MB?",
                                    "Phone photos of documents are usually 1 to 4 MB.",
                                    default=current.get("MAX_UPLOAD_SIZE_MB") or "5", check=whole_number(1, 50))
 
-    print("\n-- 4. Fee payments by UPI --")
-    answers["upi_id"] = ask("The school's UPI ID?", "Shown to parents under the QR code on the fee payment page.",
-                            default=current.get("SCHOOL_UPI_ID") or "8619190956@SBI", check=check_upi)
-    answers["upi_name"] = ask("Name on that UPI account?", "Parents see this to confirm they are paying the school.",
-                              default=current.get("SCHOOL_UPI_NAME") or "Lotus Kids Education Society")
-    answers["qr_image"] = ask(
-        "New QR code picture? (optional)",
-        "If the UPI ID changed, type the full path of a JPEG of the new QR code on this server. Press Enter to keep "
-        "the current QR code.",
-        default="", check=check_jpeg,
-    )
-
-    print("\n-- 5. WhatsApp alerts --")
+    print("\n-- 4. WhatsApp alerts --")
     answers["whatsapp"] = ask_yes(
         "Send WhatsApp alerts to parents (fees, attendance, notices, results)?",
         "Uses the school's own WhatsApp number, linked by scanning a QR code later. Needs Docker on this server. "
         "You can say no now and run this wizard again later.",
-        default=whatsapp_set_up or current.get("WHATSAPP_ENABLED", "true").lower() == "true" or not current,
+        default=whatsapp_set_up or current.get("WHATSAPP_ENABLED", "").lower() == "true"
+        or (not current and school.get("whatsapp", True)),
     )
     answers["wa_rate"] = current.get("WHATSAPP_RATE_PER_MINUTE") or "8"
     answers["wa_daily"] = current.get("WHATSAPP_DAILY_LIMIT_PER_NUMBER") or "6"
@@ -365,7 +336,7 @@ def ask_settings(current, whatsapp_set_up=False):
                                   "21,7 means nothing is sent from 9 pm to 7 am; messages wait until morning.",
                                   default=answers["wa_quiet"], check=check_quiet_hours)
 
-    print("\n-- 6. Backups --")
+    print("\n-- 5. Backups --")
     answers["keep_daily"] = ask("How many daily backups to keep?", "One backup is taken every night at 02:30.",
                                 default=current.get("BACKUP_KEEP_DAILY") or "14", check=whole_number(1, 90))
     answers["keep_weekly"] = ask("How many weekly backups to keep?", "",
@@ -377,7 +348,7 @@ def ask_settings(current, whatsapp_set_up=False):
         "A backup only on this server is lost with the server. {file} is replaced by the backup's path, for "
         "example: rclone copy {file} gdrive:lkms-backups. Press Enter to leave it empty and set it up later "
         "(docs/BACKUPS.md).",
-        default=current.get("BACKUP_COPY_COMMAND", ""), check=optional,
+        default=current.get("BACKUP_COPY_COMMAND") or school.get("backup_copy_command", ""), check=optional,
     )
     return answers
 
@@ -390,8 +361,6 @@ def summary(answers):
         ("Backups", f"{answers['data_dir']}/backups, keep {answers['keep_daily']} daily, {answers['keep_weekly']} "
                     f"weekly, {answers['keep_monthly']} monthly"),
         ("Off-site copy", answers["copy_command"] or "not set yet"),
-        ("UPI", f"{answers['upi_id']} ({answers['upi_name']})"
-                + (f", new QR from {answers['qr_image']}" if answers["qr_image"] else "")),
         ("WhatsApp", f"on, {answers['wa_rate']}/minute, {answers['wa_daily']} a day per parent, quiet "
                      f"{answers['wa_quiet']}" if answers["whatsapp"] else "off"),
     ]
@@ -463,14 +432,6 @@ def create_database(runner, answers):
         raise StepFailed("creating the database", result.stderr)
 
 
-def copy_qr(runner, answers):
-    target = runner.repo / "frontend" / "public" / "school-upi-qr.jpeg"
-    print(f"\nCopying the QR code to {target}")
-    if not runner.dry_run:
-        shutil.copyfile(Path(answers["qr_image"]).expanduser(), target)
-        chown(target, APP_USER)
-
-
 def whatsapp_key(runner):
     """Start the WhatsApp server and create LKMS's API key. Returns the key, or '' if it could not be made."""
     print("\nStarting the WhatsApp server (the first time takes a few minutes to build)")
@@ -497,8 +458,32 @@ def install(runner):
     runner.run(["npm", "run", "build"], as_app=True, cwd=frontend)
 
 
-def school_details(runner):
-    runner.run([".venv/bin/python", "manage.py", "setup_school"], as_app=True, cwd=runner.repo / "backend")
+def stage_answers(runner, school_file, data_dir):
+    """Copy the school's answers file and its pictures where the lkms user can read them."""
+    target = Path(data_dir) / "setup"
+    print(f"\nCopying {school_file} and its pictures to {target}")
+    if runner.dry_run:
+        return target / "school.json"
+    target.mkdir(parents=True, exist_ok=True)
+    os.chmod(target, 0o700)
+    chown(target, APP_USER)
+    data = json.loads(school_file.read_text())
+    for key in ("logo", "upi_qr"):
+        if data.get(key):
+            source = (school_file.parent / data[key]).resolve()
+            shutil.copyfile(source, target / source.name)
+            chown(target / source.name, APP_USER)
+            data[key] = source.name
+    (target / "school.json").write_text(json.dumps(data, indent=2))
+    chown(target / "school.json", APP_USER)
+    return target / "school.json"
+
+
+def school_details(runner, answers_file=None):
+    command = [".venv/bin/python", "manage.py", "setup_school"]
+    if answers_file:
+        command += ["--answers", str(answers_file)]
+    runner.run(command, as_app=True, cwd=runner.repo / "backend")
 
 
 def go_live(runner, answers, email):
@@ -532,7 +517,16 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Ask for LKMS's settings one at a time and set up the server.")
     parser.add_argument("--repo", type=Path, default=DEFAULT_REPO, help="the LKMS folder (default: this copy)")
     parser.add_argument("--dry-run", action="store_true", help="show what would be done without changing anything")
+    parser.add_argument("--school", type=Path, help="a school's answers file, e.g. examples/lotus-kids/school.json; "
+                                                     "its values are offered as the suggested answers")
     args = parser.parse_args(argv)
+    school = {}
+    if args.school:
+        try:
+            school = json.loads(args.school.read_text())
+        except (OSError, ValueError) as error:
+            print(f"Could not read {args.school}: {error}")
+            return 1
 
     repo = args.repo.resolve()
     backend_env, wa_env = repo / "backend" / ".env", repo / "whatsapp-server" / ".env"
@@ -547,7 +541,7 @@ def main(argv=None):
 
     current = read_env(backend_env)
     wa_current = read_env(wa_env) or read_env(repo / "whatsapp-server" / ".env.example")
-    answers = ask_settings(current, wa_env.exists())
+    answers = ask_settings(current, wa_env.exists(), school)
     summary(answers)
     if not ask_yes("Save these settings?"):
         say("Nothing was saved.")
@@ -582,9 +576,6 @@ def main(argv=None):
         ):
             create_database(runner, answers)
             steps.append("database")
-        if answers["qr_image"]:
-            copy_qr(runner, answers)
-            steps.append("QR code")
         if answers["whatsapp"] and not values["WHATSAPP_API_KEY"] and (runner.root or args.dry_run) and ask_yes(
             "Start the WhatsApp server now and connect LKMS to it?",
             "Needs Docker (docs/DEPLOY.md step 3). You will link the school's phone later from the WhatsApp page.",
@@ -602,9 +593,10 @@ def main(argv=None):
                    "the first time and after changing settings."):
             install(runner)
             steps.append("install")
-        if ask_yes("Enter the school's details now (name, session, classes, fees, administrator login)?",
+        if ask_yes("Enter the school's details now (name, logo, classes, subjects, fees, UPI, logins)?",
                    "Another set of questions, one at a time. You can change everything later in the app."):
-            school_details(runner)
+            answers_file = stage_answers(runner, args.school.resolve(), answers["data_dir"]) if args.school else None
+            school_details(runner, answers_file)
             steps.append("school details")
         if (runner.root or args.dry_run) and runner.repo == SERVER_REPO and ask_yes(
             "Turn on the website with HTTPS, nightly backups and fee reminders?",
