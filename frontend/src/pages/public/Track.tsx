@@ -118,7 +118,7 @@ export default function Track() {
         )}
       </div>
       <p className="text-sm text-muted-foreground">
-        Haven't applied yet? <Link to="/apply" className="underline">Start an application</Link>.
+        Haven't applied yet? <Link to="/#admissions" className="underline">Start an application</Link>.
       </p>
     </div>
   );

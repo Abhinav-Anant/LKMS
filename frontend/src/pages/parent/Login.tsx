@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ApiError, api } from "@/lib/api";
 import { useAuth, type TokenPair } from "@/lib/auth";
 
-export default function ParentLogin() {
+export default function ParentLogin({ embedded = false }: { embedded?: boolean }) {
   const { user, acceptTokens } = useAuth();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("");
@@ -58,9 +58,9 @@ export default function ParentLogin() {
   }
 
   return (
-    <div className="mx-auto max-w-sm space-y-6 py-4">
+    <div className={embedded ? "space-y-6" : "mx-auto max-w-sm space-y-6 py-4"}>
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Parent sign in</h1>
+        {!embedded && <h1 className="text-2xl font-bold">Parent sign in</h1>}
         <p className="text-sm text-muted-foreground">
           Use the mobile number you gave the school. All your children at the school appear under one sign-in.
         </p>

@@ -55,8 +55,8 @@ export default function App() {
         <AuthProvider>
           <Toaster />
           <Routes>
+            <Route path="/" element={<Home />} />
             <Route element={<PublicLayout />}>
-              <Route path="/" element={<Home />} />
               <Route path="/apply" element={<Apply />} />
               <Route path="/track" element={<Track />} />
               <Route path="/pay/:token" element={<Pay />} />

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-export default function Login() {
+export default function Login({ embedded = false }: { embedded?: boolean }) {
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,8 +42,8 @@ export default function Login() {
   }
 
   return (
-    <div className="mx-auto max-w-sm space-y-6 py-8">
-      <h1 className="text-2xl font-bold">Staff sign in</h1>
+    <div className={embedded ? "space-y-6" : "mx-auto max-w-sm space-y-6 py-8"}>
+      {!embedded && <h1 className="text-2xl font-bold">Staff sign in</h1>}
       {error && (
         <Alert variant="destructive" role="alert">
           <AlertDescription>{error}</AlertDescription>

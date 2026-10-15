@@ -44,7 +44,9 @@ interface Submitted {
 
 const SUBMITTED_KEY = "lkms.lastApplication";
 
-export default function Apply() {
+/** `embedded`: shown inside the landing page, so its headings sit under the page's own. */
+export default function Apply({ embedded = false }: { embedded?: boolean }) {
+  const Heading = embedded ? "h3" : "h1";
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<ApplicationForm>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
@@ -69,8 +71,11 @@ export default function Apply() {
     if (school?.state) setForm((f) => (f.state === "" ? { ...f, state: school.state } : f));
   }, [school?.state]);
 
+  // Move focus to the heading when the step changes, but not on first load (the page would jump to the form).
+  const firstStep = useRef(true);
   useEffect(() => {
-    headingRef.current?.focus();
+    if (firstStep.current) firstStep.current = false;
+    else headingRef.current?.focus();
   }, [step]);
 
   const set = <K extends keyof ApplicationForm>(key: K) => (value: ApplicationForm[K]) => {
@@ -139,7 +144,7 @@ export default function Apply() {
   if (!options.data?.sessions.length) {
     return (
       <div className="mx-auto max-w-xl space-y-3">
-        <h1 className="text-2xl font-bold">Admissions are closed</h1>
+        <Heading className="text-2xl font-bold">Admissions are closed</Heading>
         <p className="text-muted-foreground">Online admissions are not open at the moment. Please contact the school office.</p>
       </div>
     );
@@ -151,9 +156,9 @@ export default function Apply() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="space-y-4">
-        <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold outline-none">
+        <Heading ref={headingRef} tabIndex={-1} className="text-2xl font-bold outline-none">
           Admission application
-        </h1>
+        </Heading>
         <nav aria-label="Progress">
           <ol className="flex flex-wrap gap-2 text-sm">
             {STEPS.map((label, i) => (

@@ -17,17 +17,14 @@ export function PublicLayout() {
             <SchoolName school={school} />
           </Link>
           <nav aria-label="Main" className="flex flex-wrap gap-1">
-            <NavLink to="/apply" className={navClass}>
+            <NavLink to="/#admissions" className={navClass}>
               Apply
             </NavLink>
             <NavLink to="/track" className={navClass}>
               Track application
             </NavLink>
-            <NavLink to="/parent" className={navClass}>
-              Parents
-            </NavLink>
-            <NavLink to="/staff" className={navClass}>
-              Staff sign in
+            <NavLink to="/#sign-in" className={navClass}>
+              Sign in
             </NavLink>
           </nav>
         </div>

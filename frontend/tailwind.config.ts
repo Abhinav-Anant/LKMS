@@ -7,6 +7,9 @@ export default {
   theme: {
     container: { center: true, padding: "1rem", screens: { "2xl": "1280px" } },
     extend: {
+      fontFamily: {
+        display: ["Fredoka", "Trebuchet MS", "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
