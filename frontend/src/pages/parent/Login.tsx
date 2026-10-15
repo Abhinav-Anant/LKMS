@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
+import { CaptchaGate } from "@/components/CaptchaGate";
 import { Field } from "@/components/Field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ export default function ParentLogin() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
 
   if (user?.role === "parent") return <Navigate to="/parent" replace />;
 
@@ -29,12 +31,13 @@ export default function ParentLogin() {
     setBusy(true);
     setError("");
     try {
-      const data = await api.post<{ detail: string }>("/auth/parent/request-code/", { phone }, { auth: false });
+      const data = await api.post<{ detail: string }>("/auth/parent/request-code/", { phone, captcha }, { auth: false });
       setMessage(data.detail);
       setStep("code");
     } catch (err) {
       setError(explain(err));
     } finally {
+      setCaptcha(null); // each code request uses up the pass
       setBusy(false);
     }
   }
@@ -68,6 +71,7 @@ export default function ParentLogin() {
         </Alert>
       )}
       {step === "phone" ? (
+        <CaptchaGate pass={captcha} onPass={setCaptcha}>
         <form onSubmit={sendCode} className="space-y-4">
           <Field label="Mobile number" required>
             <Input type="tel" inputMode="numeric" autoComplete="tel-national" maxLength={14} value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -79,6 +83,7 @@ export default function ParentLogin() {
             I already have a code from the school office
           </button>
         </form>
+        </CaptchaGate>
       ) : (
         <form onSubmit={verify} className="space-y-4">
           {message && <p role="status" className="rounded-md bg-muted p-3 text-sm">{message}</p>}

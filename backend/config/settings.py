@@ -164,6 +164,7 @@ REST_FRAMEWORK = {
         "login": os.getenv("THROTTLE_LOGIN", "10/minute"),
         "public_payment": os.getenv("THROTTLE_PUBLIC_PAYMENT", "60/hour"),
         "parent_code": os.getenv("THROTTLE_PARENT_CODE", "20/hour"),
+        "captcha": os.getenv("THROTTLE_CAPTCHA", "120/hour"),
     },
 }
 

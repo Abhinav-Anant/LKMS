@@ -11,5 +11,6 @@ urlpatterns = [
     path("school/", views.public_school, name="public-school"),
     path("school/logo/", views.school_logo, name="school-logo"),
     path("school/upi-qr/", views.school_upi_qr, name="school-upi-qr"),
+    path("captcha/", views.CaptchaView.as_view(), name="captcha"),
     path("school/settings/", views.SchoolProfileView.as_view(), name="school-settings"),
 ] + router.urls

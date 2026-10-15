@@ -68,6 +68,11 @@ class SchoolProfile(models.Model):
         default=1, help_text="Next serial number in the admission register"
     )
 
+    captcha_enabled = models.BooleanField(
+        "CAPTCHA on public forms", default=True,
+        help_text="Visitors must type the letters from a picture before using the admission, tracking and parent sign-in forms",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -116,6 +121,13 @@ class SchoolProfile(models.Model):
                     break
             profile.save(update_fields=["next_admission_number", "updated_at"])
             return number
+
+
+class UsedCaptcha(models.Model):
+    """A CAPTCHA challenge or pass that has been used, so it cannot be used again."""
+
+    nonce = models.CharField(max_length=32, unique=True)
+    used_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 
 class AuditLog(models.Model):

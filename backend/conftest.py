@@ -12,12 +12,14 @@ from users.models import User
 
 
 @pytest.fixture(autouse=True)
-def _isolated(settings, tmp_path):
+def _isolated(settings, tmp_path, request, monkeypatch):
     settings.PRIVATE_MEDIA_ROOT = tmp_path / "private"
     settings.REST_FRAMEWORK = {**settings.REST_FRAMEWORK, "DEFAULT_THROTTLE_CLASSES": []}
     from django.core.cache import cache
 
     cache.clear()
+    if "captcha" not in request.keywords:  # the CAPTCHA has its own tests; elsewhere it is switched off
+        monkeypatch.setattr("core.captcha.enabled", lambda: False)
 
 
 @pytest.fixture

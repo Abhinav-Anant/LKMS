@@ -9,7 +9,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from academics.models import SchoolClass
-from core import audit
+from core import audit, captcha
 from core.errors import as_api_errors
 from core.permissions import Can, has_capability
 from core.storage import private_file_response, validate_upload
@@ -62,6 +62,7 @@ class PublicApplyView(APIView):
             return Response({"detail": "The application could not be submitted."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = ApplicationFormSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        captcha.require(request)  # after the field checks, so a typo does not use up the pass
         with as_api_errors():
             application, token = services.create_application(request, serializer.validated_data)
         return Response(
@@ -103,6 +104,7 @@ class PublicTrackView(APIView):
     def post(self, request):
         serializer = TrackSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        captcha.require(request)
         data = serializer.validated_data
         phone = normalise_mobile(data["phone"])
         application = AdmissionApplication.objects.filter(

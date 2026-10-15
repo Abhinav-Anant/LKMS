@@ -30,3 +30,4 @@ dev = [
 DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["tests.py", "test_*.py"]
 addopts = "-q"
+markers = ["captcha: keep the public-form CAPTCHA switched on"]

@@ -40,6 +40,7 @@ interface Settings {
   upi_id: string;
   upi_name: string;
   office_can_collect_fees: boolean;
+  captcha_enabled: boolean;
   fee_reminder_days_before: number;
   fee_reminder_every_days: number;
   has_logo: boolean;
@@ -210,6 +211,21 @@ export default function SchoolSettings() {
             </Field>
           </div>
         </div>
+      </Panel>
+
+      <Panel title="Website security">
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1 h-4 w-4"
+            checked={form.captcha_enabled}
+            onChange={(e) => setForm({ ...form, captcha_enabled: e.target.checked })}
+          />
+          <span>
+            Ask visitors to type the letters from a picture (CAPTCHA) before they can use the admission form, application
+            tracking and parent sign-in. Keeps out automated spam.
+          </span>
+        </label>
       </Panel>
     </form>
   );

@@ -13,7 +13,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from core import audit
+from core import audit, captcha
 from core.models import SchoolProfile
 from core.permissions import CAPABILITIES, Can, roles_for
 
@@ -94,6 +94,7 @@ class ParentCodeRequestView(APIView):
     def post(self, request):
         data = ParentCodeRequestSerializer(data=request.data)
         data.is_valid(raise_exception=True)
+        captcha.require(request)
         parent_login.request_code(data.validated_data["phone"])
         return Response({"detail": (
             "If this number is registered with the school, a 6-digit code has been sent to it. "

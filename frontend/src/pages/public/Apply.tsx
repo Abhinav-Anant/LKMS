@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+import { CaptchaGate } from "@/components/CaptchaGate";
 import { DocumentUploader, type UploadedState } from "@/components/DocumentUploader";
 import { Field, NativeSelect } from "@/components/Field";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -50,6 +51,7 @@ export default function Apply() {
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<Submitted | null>(null);
+  const [captcha, setCaptcha] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const options = useQuery({
@@ -102,7 +104,7 @@ export default function Apply() {
     setSubmitting(true);
     setFormError("");
     const honeypot = (e.currentTarget as HTMLFormElement).elements.namedItem("website") as HTMLInputElement | null;
-    const payload: Record<string, unknown> = { ...form, website: honeypot?.value ?? "" };
+    const payload: Record<string, unknown> = { ...form, website: honeypot?.value ?? "", captcha };
     for (const key of ["father_annual_income", "mother_annual_income"]) if (payload[key] === "") payload[key] = null;
     try {
       const result = await api.post<Submitted>("/admissions/public/apply/", payload, { auth: false });
@@ -114,7 +116,10 @@ export default function Apply() {
       }
       setStep(4);
     } catch (err) {
-      if (err instanceof ApiError) {
+      if (err instanceof ApiError && err.fieldErrors.captcha) {
+        setCaptcha(null);
+        setFormError("Please type the letters from the picture again, then send the application.");
+      } else if (err instanceof ApiError) {
         const fields = err.fieldErrors;
         setErrors(fields);
         const keys = Object.keys(fields);
@@ -176,6 +181,8 @@ export default function Apply() {
           <AlertDescription>{formError}</AlertDescription>
         </Alert>
       )}
+
+      <CaptchaGate pass={captcha} onPass={setCaptcha}>
 
       {step === 0 && (
         <StepForm onSubmit={next} onBack={null}>
@@ -397,6 +404,7 @@ export default function Apply() {
       )}
 
       {step === 4 && submitted && <Documents submitted={submitted} />}
+      </CaptchaGate>
     </div>
   );
 }

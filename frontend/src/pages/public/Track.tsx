@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 
+import { CaptchaGate } from "@/components/CaptchaGate";
 import { Field } from "@/components/Field";
 import { StatusBadge, VerificationBadge } from "@/components/StatusBadge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,6 +15,7 @@ export default function Track() {
   const [result, setResult] = useState<TrackResult | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,18 +31,22 @@ export default function Track() {
             application_number: String(data.get("application_number")).trim().toUpperCase(),
             date_of_birth: data.get("date_of_birth"),
             phone: data.get("phone"),
+            captcha,
           },
           { auth: false },
         ),
       );
     } catch (err) {
       setResult(null);
+      setCaptcha(null); // each check uses up the pass
       setError(
         err instanceof ApiError && err.status === 404
           ? "No application matches these details. Check the application number, the child's date of birth and the mobile number given on the form."
           : err instanceof ApiError && err.status === 429
             ? "Too many attempts. Please try again in an hour."
-            : "Something went wrong. Please try again.",
+            : err instanceof ApiError && err.fieldErrors.captcha
+              ? "Please type the letters from the picture again."
+              : "Something went wrong. Please try again.",
       );
     } finally {
       setBusy(false);
@@ -50,6 +56,7 @@ export default function Track() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <h1 className="text-2xl font-bold">Track your application</h1>
+      <CaptchaGate pass={captcha} onPass={setCaptcha}>
       <form onSubmit={submit} className="space-y-4" method="post">
         <Field label="Application number" required hint="For example LK-2027-28-00012">
           <Input name="application_number" autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoComplete="off" />
@@ -64,6 +71,7 @@ export default function Track() {
           {busy ? "Checking…" : "Check status"}
         </Button>
       </form>
+      </CaptchaGate>
 
       <div aria-live="polite">
         {error && (

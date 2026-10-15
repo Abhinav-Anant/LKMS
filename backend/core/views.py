@@ -13,8 +13,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
 
-from . import audit
+from . import audit, captcha
 from .models import AuditLog, SchoolProfile
 from .permissions import Can
 from .serializers import AuditLogSerializer, PublicSchoolSerializer, SchoolProfileSerializer
@@ -70,6 +72,36 @@ def school_upi_qr(request):
     response = HttpResponse(out.getvalue(), content_type="image/svg+xml")
     response["Cache-Control"] = "public, max-age=300"
     return response
+
+
+class CaptchaView(APIView):
+    """A new CAPTCHA picture, and checking what the visitor typed. See core/captcha.py."""
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "captcha"
+
+    @extend_schema(responses=inline_serializer("Captcha", {
+        "enabled": drf_serializers.BooleanField(), "challenge": drf_serializers.CharField(),
+        "image": drf_serializers.CharField(),
+    }))
+    def get(self, request):
+        if not captcha.enabled():
+            return Response({"enabled": False})
+        response = Response({"enabled": True, **captcha.new_challenge()})
+        response["Cache-Control"] = "no-store"
+        return response
+
+    @extend_schema(
+        request=inline_serializer("CaptchaAnswer", {"challenge": drf_serializers.CharField(), "answer": drf_serializers.CharField()}),
+        responses=inline_serializer("CaptchaPass", {"pass": drf_serializers.CharField()}),
+    )
+    def post(self, request):
+        token = captcha.verify_answer(request.data.get("challenge"), request.data.get("answer"))
+        if token is None:
+            return Response({"answer": ["The letters did not match. Try the new picture."]}, status=400)
+        return Response({"pass": token})
 
 
 class SchoolProfileView(generics.RetrieveUpdateAPIView):
