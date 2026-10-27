@@ -170,6 +170,21 @@ def test_aadhaar_is_masked_for_office_staff(public, client_for, application_data
     assert client_for("principal").get(f"/api/v1/admissions/applications/{pk}/").data["aadhaar_number"] == "123456789012"
 
 
+def test_parent_aadhaar_is_required_12_digits_and_masked(public, client_for, application_data):
+    for bad in ("", "12345", "1234 5678 901X"):
+        response = public.post("/api/v1/admissions/public/apply/", {**application_data, "parent_aadhaar_number": bad}, format="json")
+        assert response.status_code == 400 and "parent_aadhaar_number" in response.data, bad
+    del application_data["parent_aadhaar_number"]
+    response = public.post("/api/v1/admissions/public/apply/", application_data, format="json")
+    assert "parent_aadhaar_number" in response.data
+
+    apply(public, {**application_data, "parent_aadhaar_number": "2345-6789-0123"})
+    pk = AdmissionApplication.objects.get().pk
+    assert client_for("office").get(f"/api/v1/admissions/applications/{pk}/").data["parent_aadhaar_number"] == "XXXX-XXXX-0123"
+    assert client_for("principal").get(f"/api/v1/admissions/applications/{pk}/").data["parent_aadhaar_number"] == "234567890123"
+    assert "parent_aadhaar_number" not in client_for("office").get("/api/v1/admissions/applications/").data["results"][0]
+
+
 def test_request_documents_needs_a_message(public, client_for, application_data):
     apply(public, application_data)
     pk = AdmissionApplication.objects.get().pk

@@ -43,8 +43,20 @@ interface Settings {
   captcha_enabled: boolean;
   fee_reminder_days_before: number;
   fee_reminder_every_days: number;
+  map_latitude: string | null;
+  map_longitude: string | null;
+  facebook_url: string;
+  instagram_url: string;
+  youtube_url: string;
+  x_url: string;
   has_logo: boolean;
   has_upi_qr: boolean;
+}
+
+/** "26.8303207, 75.8255778" or a Google Maps link with "@26.83,75.82" in it -> rounded [lat, lng]. */
+function parseLocation(value: string): [string, string] | null {
+  const match = /(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/.exec(value);
+  return match ? [Number(match[1]).toFixed(6), Number(match[2]).toFixed(6)] : null;
 }
 
 type Errors = Record<string, string[]>;
@@ -158,6 +170,28 @@ export default function SchoolSettings() {
             </div>
           </Field>
         </div>
+      </Panel>
+
+      <Panel title="Front page: map and social media">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Where the school is on the map" className="sm:col-span-2"
+            hint="Paste the Google Maps link of the school, or its latitude and longitude like 26.830321, 75.825578. Leave empty to hide the map."
+            error={errors.map_latitude ?? errors.map_longitude}>
+            <Input
+              key={`${form.map_latitude},${form.map_longitude}`}
+              defaultValue={form.map_latitude != null ? `${form.map_latitude}, ${form.map_longitude}` : ""}
+              onBlur={(e) => {
+                const spot = parseLocation(e.target.value);
+                setForm({ ...form, map_latitude: spot?.[0] ?? null, map_longitude: spot?.[1] ?? null });
+              }}
+            />
+          </Field>
+          <Field label="Facebook page" error={errors.facebook_url}><Input {...text("facebook_url")} type="url" placeholder="https://" /></Field>
+          <Field label="Instagram page" error={errors.instagram_url}><Input {...text("instagram_url")} type="url" placeholder="https://" /></Field>
+          <Field label="YouTube channel" error={errors.youtube_url}><Input {...text("youtube_url")} type="url" placeholder="https://" /></Field>
+          <Field label="X (Twitter) page" error={errors.x_url}><Input {...text("x_url")} type="url" placeholder="https://" /></Field>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground">Only the links you fill in are shown at the bottom of the website.</p>
       </Panel>
 
       <Panel title="Admission numbers">

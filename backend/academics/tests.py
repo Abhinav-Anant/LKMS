@@ -8,7 +8,7 @@ pytestmark = pytest.mark.django_db
 def test_admission_options_are_public(public, seeded):
     data = public.get("/api/v1/academics/admission-options/").data
     assert [s["name"] for s in data["sessions"]] == [seeded["open_session"].name]
-    assert len(data["classes"]) == 11
+    assert len(data["classes"]) == 12
 
 
 def test_only_one_current_session(seeded):

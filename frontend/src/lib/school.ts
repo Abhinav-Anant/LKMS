@@ -17,7 +17,21 @@ export interface PublicSchool {
   board_label: string;
   brand_colour: string;
   has_logo: boolean;
+  map_latitude: string | null;
+  map_longitude: string | null;
+  facebook_url: string;
+  instagram_url: string;
+  youtube_url: string;
+  x_url: string;
 }
+
+export interface GalleryPhoto {
+  id: number;
+  caption: string;
+  uploaded_at: string;
+}
+
+export const galleryImageUrl = (id: number) => apiUrl(`/school/gallery/${id}/image/`);
 
 export const LOGO_URL = apiUrl("/school/logo/");
 export const UPI_QR_URL = apiUrl("/school/upi-qr/");

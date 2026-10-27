@@ -338,7 +338,7 @@ function Details({ app }: { app: Detail }) {
     ["Father", [["Name", app.father_name], ["Mobile", app.father_phone], ["Email", app.father_email], ["Occupation", app.father_occupation], ["Education", app.father_qualification]]],
     ["Mother", [["Name", app.mother_name], ["Mobile", app.mother_phone], ["Email", app.mother_email], ["Occupation", app.mother_occupation], ["Education", app.mother_qualification]]],
     ["Guardian", [["Name", app.guardian_name], ["Relationship", app.guardian_relationship], ["Mobile", app.guardian_phone], ["Email", app.guardian_email]]],
-    ["Contact and consent", [["Main contact", RELATIONSHIPS[app.primary_contact]], ["Consent given", formatDateTime(app.consent_given_at)]]],
+    ["Contact and consent", [["Main contact", RELATIONSHIPS[app.primary_contact]], ["Parent / guardian Aadhaar", app.parent_aadhaar_number], ["Consent given", formatDateTime(app.consent_given_at)]]],
   ];
   return (
     <Panel title="Application details">

@@ -120,8 +120,9 @@ def test_lotus_kids_interactively(monkeypatch, capsys):
         "Lotus Kids School", "Rajasthan", "Rajasthan Board of Secondary Education (RBSE)")
     assert school.brand_colour == "#ad2972"
     assert school.upi_qr and school.upi_id == "8619190956@SBI"
-    assert SchoolClass.objects.filter(is_active=True).count() == 11
-    assert FeeAmount.objects.filter(fee_head__code="tuition").count() == 11 * 4
+    assert SchoolClass.objects.filter(is_active=True).count() == 12
+    assert FeeAmount.objects.filter(fee_head__code="tuition").count() == 12 * 4
+    assert (school.map_latitude, school.map_longitude) == (Decimal("26.830321"), Decimal("75.825578"))
     assert set(FeeHead.objects.values_list("code", flat=True)) >= {"tuition", "admission", "annual", "exam"}
     assert User.objects.get(username="abhinav").role == "admin"
     priya = User.objects.get(username="priya")

@@ -1,8 +1,14 @@
+import io
+
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.files.base import ContentFile
 from rest_framework import serializers
 
-from .models import AuditLog, SchoolProfile
+from .models import AuditLog, GalleryPhoto, SchoolProfile
 from .storage import validate_upload
+
+# Phone photos are often bigger than documents; they are made smaller on upload. Matches nginx's 10 MB body limit.
+GALLERY_MAX_MB = 9
 
 
 class PublicSchoolSerializer(serializers.ModelSerializer):
@@ -12,10 +18,35 @@ class PublicSchoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = SchoolProfile
         fields = ["name", "short_code", "address", "district", "state", "pincode", "phone", "email", "website",
-                  "board", "board_label", "brand_colour", "has_logo"]
+                  "board", "board_label", "brand_colour", "has_logo", "map_latitude", "map_longitude",
+                  "facebook_url", "instagram_url", "youtube_url", "x_url"]
 
     def get_has_logo(self, obj) -> bool:
         return bool(obj.logo)
+
+
+class GalleryPhotoSerializer(serializers.ModelSerializer):
+    """Photos are re-saved as JPEG, at most 1600 px wide, without the camera's details (such as GPS)."""
+
+    image = serializers.FileField(write_only=True)
+
+    class Meta:
+        model = GalleryPhoto
+        fields = ["id", "image", "caption", "uploaded_at"]
+
+    def validate_image(self, value):
+        from PIL import Image, ImageOps
+
+        try:
+            validate_upload(value, allowed=("jpg", "png"), max_mb=GALLERY_MAX_MB)
+        except DjangoValidationError as error:
+            raise serializers.ValidationError(error.messages) from error
+        with Image.open(value) as img:
+            img = ImageOps.exif_transpose(img).convert("RGB")
+            img.thumbnail((1600, 1600))
+            out = io.BytesIO()
+            img.save(out, "JPEG", quality=85)
+        return ContentFile(out.getvalue(), name="photo.jpg")
 
 
 class SchoolProfileSerializer(serializers.ModelSerializer):

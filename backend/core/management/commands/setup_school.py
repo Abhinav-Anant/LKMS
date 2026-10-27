@@ -52,6 +52,8 @@ DEFAULT_CODES = {name.lower(): code for name, code, _, _ in CLASSES}
 AGES = {code: (low, high) for _, code, low, high in CLASSES}
 COLOURS = {"blue": "#1d4ed8", "green": "#15803d", "red": "#b91c1c", "pink": "#ad2972", "purple": "#6d28d9",
            "orange": "#c2410c", "teal": "#0f766e", "maroon": "#7f1d1d", "navy": "#1e3a8a"}
+SOCIAL_LINKS = [("facebook_url", "Facebook page"), ("instagram_url", "Instagram page"),
+                ("youtube_url", "YouTube channel"), ("x_url", "X (Twitter) page")]
 STAFF_ROLES = {"principal": "Principal", "office": "Office staff", "accountant": "Accountant", "teacher": "Teacher"}
 
 
@@ -352,6 +354,20 @@ class Command(BaseCommand):
         p.affiliation_number = ask("Affiliation or recognition number? (optional)", "",
                                    self.d("affiliation_number", p.affiliation_number), required=False)
 
+        print("\nOn the website")
+        saved = f"{p.map_latitude}, {p.map_longitude}" if p.map_latitude is not None else ""
+        where = ask("Where is the school on the map? (optional)",
+                    "Latitude and longitude, like 26.830321, 75.825578. In Google Maps, right-click the school and "
+                    "click the numbers to copy them. The website shows a map at the bottom of the front page.",
+                    self.d("map", saved),
+                    pattern(r"\s*-?\d{1,2}(\.\d+)?\s*,\s*-?\d{1,3}(\.\d+)?\s*", "Type two numbers with a comma between."),
+                    required=False)
+        p.map_latitude, p.map_longitude = (round(Decimal(v), 6) for v in where.split(",")) if where else (None, None)
+        for key, label in SOCIAL_LINKS:
+            setattr(p, key, ask(f"{label} link? (optional)", "Shown at the bottom of the website.",
+                                self.d(key, getattr(p, key)), pattern(r"https?://\S+", "Start it with https://"),
+                                required=False))
+
         print("\nAdmission (S.R.) numbers")
         p.admission_number_prefix = ask(
             "Text before the admission number? (optional)",
@@ -458,7 +474,7 @@ class Command(BaseCommand):
         explain(", ".join(names))
         if not ask_yes("Is this list right?", "Answer n to type the school's own list."):
             names = split_list(ask("Type the classes, youngest first, separated by commas.",
-                                   "For example: Nursery, LKG, UKG, Class 1, Class 2, Class 3, Class 4, Class 5",
+                                   "For example: Play Group, Nursery, LKG, UKG, Class 1, Class 2, Class 3, Class 4, Class 5",
                                    check=check_list))
         current_sections = sorted(set(Section.objects.filter(session=self.session).values_list("name", flat=True)))
         sections = [s.upper() for s in split_list(ask(

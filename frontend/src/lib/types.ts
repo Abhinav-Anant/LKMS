@@ -144,6 +144,7 @@ export interface ApplicationForm {
   guardian_email: string;
   guardian_occupation: string;
   primary_contact: "father" | "mother" | "guardian";
+  parent_aadhaar_number: string;
   declaration_accepted: boolean;
 }
 

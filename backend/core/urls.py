@@ -5,6 +5,7 @@ from . import views
 
 router = DefaultRouter()
 router.register("audit-log", views.AuditLogViewSet, basename="audit-log")
+router.register("school/gallery", views.GalleryViewSet, basename="gallery")
 
 urlpatterns = [
     path("health/", views.health, name="health"),

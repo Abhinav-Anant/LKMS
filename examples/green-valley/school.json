@@ -19,6 +19,11 @@
   "admission_number_width": 5,
   "next_admission_number": 1201,
   "brand_colour": "green",
+  "map": "26.958000, 75.778000",
+  "facebook_url": "https://www.facebook.com/greenvalleyschool",
+  "instagram_url": "https://www.instagram.com/greenvalleyschool",
+  "youtube_url": "",
+  "x_url": "",
 
   "classes": ["Pre-Nursery", "Nursery", "KG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5"],
   "sections": ["A", "B"],

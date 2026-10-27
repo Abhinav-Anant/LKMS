@@ -8,8 +8,9 @@
   "board": "state",
   "board_name": "Rajasthan Board of Secondary Education (RBSE)",
   "brand_colour": "#ad2972",
+  "map": "26.830321, 75.825578",
 
-  "classes": ["Nursery", "LKG", "UKG", "Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
+  "classes": ["Play Group", "Nursery", "LKG", "UKG","Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8"],
   "sections": ["A"],
   "age_cutoff": "31-03-2027",
   "grade_scale": "standard",

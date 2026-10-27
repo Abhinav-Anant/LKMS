@@ -33,7 +33,7 @@ const EMPTY: ApplicationForm = {
   father_annual_income: "", mother_name: "", mother_phone: "", mother_email: "", mother_occupation: "",
   mother_qualification: "", mother_annual_income: "", guardian_name: "", guardian_relationship: "",
   guardian_phone: "", guardian_email: "", guardian_occupation: "", primary_contact: "father",
-  declaration_accepted: false,
+  parent_aadhaar_number: "", declaration_accepted: false,
 };
 
 interface Submitted {
@@ -377,6 +377,11 @@ export default function Apply({ embedded = false }: { embedded?: boolean }) {
             </div>
             {errors.primary_contact && <p className="text-sm text-destructive">{errors.primary_contact.join(" ")}</p>}
           </fieldset>
+          <Field label="Aadhaar number of the parent or guardian" required error={errors.parent_aadhaar_number}
+            hint="12 digits, of the main contact chosen above">
+            <Input {...text("parent_aadhaar_number")} required inputMode="numeric" pattern="\d{4} ?\d{4} ?\d{4}"
+              maxLength={14} autoComplete="off" />
+          </Field>
         </StepForm>
       )}
 
@@ -447,6 +452,7 @@ function Summary({ form, sessions, classes, onEdit }: { form: ApplicationForm; s
     ["Mother", [form.mother_name, form.mother_phone].filter(Boolean).join(", "), 2],
     ["Guardian", [form.guardian_name, form.guardian_relationship, form.guardian_phone].filter(Boolean).join(", "), 2],
     ["Main contact", RELATIONSHIPS[form.primary_contact], 2],
+    ["Parent / guardian Aadhaar", form.parent_aadhaar_number ? `XXXX XXXX ${form.parent_aadhaar_number.replace(/\D/g, "").slice(-4)}` : "", 2],
   ];
   return (
     <section aria-labelledby="review-heading" className="space-y-3">

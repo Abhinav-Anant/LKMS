@@ -17,6 +17,7 @@ from exams.models import GradeBand
 
 CLASSES = [
     # name, code, min age, max age (on the session's cut-off date)
+    ("Play Group", "PG", 2, 3),
     ("Nursery", "NUR", 3, 4),
     ("LKG", "LKG", 4, 5),
     ("UKG", "UKG", 5, 6),

@@ -74,6 +74,7 @@ def application_data(seeded):
         "mother_name": "Neha Sharma",
         "mother_phone": "9829054321",
         "primary_contact": "father",
+        "parent_aadhaar_number": "2345 6789 0123",
         "declaration_accepted": True,
     }
 

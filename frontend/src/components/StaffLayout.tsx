@@ -93,6 +93,11 @@ export function StaffLayout() {
                     School settings
                   </NavLink>
                 )}
+                {can("school.manage") && (
+                  <NavLink to="/staff/gallery" className={navClass}>
+                    Photo gallery
+                  </NavLink>
+                )}
                 {can("users.manage") && (
                   <NavLink to="/staff/users" className={navClass}>
                     Users

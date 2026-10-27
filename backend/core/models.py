@@ -35,6 +35,16 @@ class SchoolProfile(models.Model):
     )
     affiliation_number = models.CharField(max_length=50, blank=True)
 
+    # Shown on the public website
+    map_latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True, help_text="Where the school is, for the map, e.g. 26.830321"
+    )
+    map_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, help_text="e.g. 75.825578")
+    facebook_url = models.URLField("Facebook page", blank=True)
+    instagram_url = models.URLField("Instagram page", blank=True)
+    youtube_url = models.URLField("YouTube channel", blank=True)
+    x_url = models.URLField("X (Twitter) page", blank=True)
+
     # Look
     logo = models.FileField(upload_to=RandomPath("school"), storage=get_private_storage, blank=True)
     brand_colour = models.CharField(
@@ -121,6 +131,23 @@ class SchoolProfile(models.Model):
                     break
             profile.save(update_fields=["next_admission_number", "updated_at"])
             return number
+
+
+class GalleryPhoto(models.Model):
+    """A photo of school life, shown to everyone on the website's gallery."""
+
+    image = models.FileField(upload_to=RandomPath("gallery"), storage=get_private_storage)
+    caption = models.CharField(max_length=200, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return self.caption or f"Photo {self.pk}"
 
 
 class UsedCaptcha(models.Model):

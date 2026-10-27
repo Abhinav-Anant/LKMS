@@ -26,13 +26,15 @@ Send this list to the school. Items marked *optional* can be skipped.
 - *Optional:* UDISE+ code (11 digits), affiliation or recognition number.
 - Board: CBSE, CISCE (ICSE), a state board (and its full name, e.g. Rajasthan Board of Secondary Education), or none.
 - *Optional:* logo (PNG or JPEG), and the school's colour.
+- *Optional:* where the school is on the map (latitude, longitude) and its Facebook, Instagram, YouTube and X links,
+  shown on the front page. School photos for the website's gallery are uploaded later in the app.
 
 **Admissions**
 - Admission (S.R.) number format: any text before the number (e.g. `GV/`), number of digits, and the next number
   if the school already has a paper register.
 - School year dates (usually 1 April to 31 March), and the date on which a child's age is checked.
 - Classes offered, youngest first, and sections in each (A, B…), and the most students per section.
-- Age limits for the youngest classes (e.g. Nursery 3 to 4 years).
+- Age limits for the youngest classes (e.g. Play Group 2 to 3, Nursery 3 to 4 years).
 - Documents parents must upload (birth certificate, photo, ID proof…), and which are optional.
 
 **Teaching**
@@ -71,6 +73,7 @@ asks for it. Pictures are named relative to the file and kept next to it. Two co
 | `name`, `short_code`, `address`, `district`, `state`, `pincode`, `phone`, `email`, `website`, `udise_code`, `affiliation_number` | | The school |
 | `board`, `board_name` | `"state"`, `"Rajasthan Board of Secondary Education (RBSE)"` | `board` is `cbse`, `icse`, `state` or `other` |
 | `logo`, `brand_colour` | `"logo.png"`, `"#ad2972"` or `"green"` | Look |
+| `map`, `facebook_url`, `instagram_url`, `youtube_url`, `x_url` | `"26.830321, 75.825578"`, `"https://facebook.com/myschool"` | Front page map and social links |
 | `admission_number_prefix`, `admission_number_width`, `next_admission_number` | `"GV/"`, `5`, `1201` | Admission numbers |
 | `age_cutoff`, `admissions_open` | `"31-03-2027"`, `true` | Age check date; take applications for next year |
 | `classes`, `sections`, `capacity`, `age_limits` | `["Nursery", "KG", "Class 1"]`, `["A", "B"]`, `35`, `{"Nursery": [3, 4]}` | Classes |

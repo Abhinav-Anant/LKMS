@@ -102,6 +102,10 @@ class AdmissionApplication(models.Model):
     guardian_email = models.EmailField(blank=True)
     guardian_occupation = models.CharField(max_length=100, blank=True)
     primary_contact = models.CharField(max_length=20, choices=Relationship.choices)
+    # Required on new applications (see the form serializer); blank only on ones sent before it was asked.
+    parent_aadhaar_number = models.CharField(
+        "parent's or guardian's Aadhaar number", max_length=12, blank=True, validators=[validate_aadhaar]
+    )
 
     # Consent (parental consent for processing a child's data)
     declaration_accepted = models.BooleanField(default=False)

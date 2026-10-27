@@ -60,6 +60,41 @@ def test_admin_sets_logo_qr_and_colour(client_for, public):
 
 
 @pytest.mark.django_db
+def test_map_and_social_links_are_public(client_for, public):
+    response = client_for("admin").patch("/api/v1/school/settings/", {
+        "map_latitude": "26.830321", "map_longitude": "75.825578", "instagram_url": "https://instagram.com/lotuskids",
+    }, format="json")
+    assert response.status_code == 200, response.data
+    school = public.get("/api/v1/school/").data
+    assert (school["map_latitude"], school["map_longitude"]) == ("26.830321", "75.825578")
+    assert school["instagram_url"] == "https://instagram.com/lotuskids" and school["facebook_url"] == ""
+
+
+@pytest.mark.django_db
+def test_gallery_admin_adds_photos_everyone_sees_them(client_for, public):
+    url = "/api/v1/school/gallery/"
+    assert public.get(url).data == []
+    assert public.post(url, {"image": png_file()}, format="multipart").status_code in (401, 403)
+    assert client_for("principal").post(url, {"image": png_file()}, format="multipart").status_code == 403
+    pdf = SimpleUploadedFile("x.pdf", b"%PDF-1.4 x", content_type="application/pdf")
+    assert client_for("admin").post(url, {"image": pdf}, format="multipart").status_code == 400
+
+    admin_client = client_for("admin")
+    response = admin_client.post(url, {"image": png_file(), "caption": "Annual Day"}, format="multipart")
+    assert response.status_code == 201, response.data
+    [photo] = public.get(url).data
+    assert photo["caption"] == "Annual Day" and "image" not in photo
+    picture = public.get(f"{url}{photo['id']}/image/")
+    assert picture.status_code == 200 and picture["Content-Type"] == "image/jpeg"  # re-saved as JPEG
+    assert b"".join(picture.streaming_content).startswith(b"\xff\xd8\xff")
+
+    assert public.delete(f"{url}{photo['id']}/").status_code in (401, 403)
+    assert admin_client.delete(f"{url}{photo['id']}/").status_code == 204
+    assert public.get(url).data == []
+    assert AuditLog.objects.filter(action__in=["gallery.added", "gallery.removed"]).count() == 2
+
+
+@pytest.mark.django_db
 def test_office_collects_fees_only_when_the_school_allows(db):
     office_user = make_user("office")
     from core.permissions import has_capability

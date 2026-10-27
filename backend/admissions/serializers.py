@@ -31,12 +31,16 @@ class ApplicationFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdmissionApplication
         exclude = ["id"] + WORKFLOW_FIELDS
+        extra_kwargs = {"parent_aadhaar_number": {"required": True, "allow_blank": False}}
 
     def to_internal_value(self, data):
         data = data.copy()
         for field in PHONE_FIELDS:
             if data.get(field):
                 data[field] = normalise_mobile(data[field])
+        for field in ("aadhaar_number", "parent_aadhaar_number"):
+            if isinstance(data.get(field), str):
+                data[field] = data[field].replace(" ", "").replace("-", "")
         return super().to_internal_value(data)
 
     def validate(self, attrs):
@@ -122,6 +126,7 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not (request and has_capability(request.user, "students.view_sensitive")):
             data["aadhaar_number"] = mask_aadhaar(instance.aadhaar_number)
+            data["parent_aadhaar_number"] = mask_aadhaar(instance.parent_aadhaar_number)
         return data
 
 

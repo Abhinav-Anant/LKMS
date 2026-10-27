@@ -73,11 +73,11 @@ def detect_type(uploaded_file):
     return None, None
 
 
-def validate_upload(uploaded_file, allowed=("pdf", "jpg", "png")):
+def validate_upload(uploaded_file, allowed=("pdf", "jpg", "png"), max_mb=None):
     """Check size and real file type. Returns (extension, content_type, sha256)."""
-    max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
-    if uploaded_file.size > max_bytes:
-        raise ValidationError(f"File is larger than {settings.MAX_UPLOAD_SIZE_MB} MB.")
+    max_mb = max_mb or settings.MAX_UPLOAD_SIZE_MB
+    if uploaded_file.size > max_mb * 1024 * 1024:
+        raise ValidationError(f"File is larger than {max_mb} MB.")
     if uploaded_file.size == 0:
         raise ValidationError("File is empty.")
 

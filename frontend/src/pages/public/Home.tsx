@@ -1,29 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowRight, BellRing, CalendarCheck, ClipboardCheck, FileUp, GraduationCap, IndianRupee, LogIn, Mail, MapPin,
-  Phone, Search, ShieldCheck, Sparkles, UserRound, Wallet,
+  ArrowRight, BellRing, CalendarCheck, ClipboardCheck, Facebook, FileUp, GraduationCap, IndianRupee, Instagram, LogIn,
+  Mail, MapPin, Phone, Search, ShieldCheck, Sparkles, Twitter, UserRound, Wallet, Youtube,
 } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { Hero3D } from "@/components/landing/Hero3D";
 import { SchoolName } from "@/components/SchoolName";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { useBranding } from "@/lib/school";
+import { galleryImageUrl, useBranding, type GalleryPhoto } from "@/lib/school";
 import type { AcademicSession, SchoolClass } from "@/lib/types";
 import ParentLogin from "@/pages/parent/Login";
 import Apply from "@/pages/public/Apply";
 import StaffLogin from "@/pages/staff/Login";
 
-const NAV = [
-  { href: "#admissions", label: "Admissions" },
-  { href: "#parents", label: "For parents" },
-  { href: "#sign-in", label: "Sign in" },
-  { href: "#contact", label: "Contact" },
-];
+const SOCIAL = [
+  { key: "facebook_url", label: "Facebook", icon: <Facebook /> },
+  { key: "instagram_url", label: "Instagram", icon: <Instagram /> },
+  { key: "youtube_url", label: "YouTube", icon: <Youtube /> },
+  { key: "x_url", label: "X (Twitter)", icon: <Twitter /> },
+] as const;
 
 export default function Home() {
   const school = useBranding();
@@ -35,6 +36,15 @@ export default function Home() {
   const classes = options.data?.classes ?? [];
   const session = options.data?.sessions[0];
   const classRange = classes.length > 1 ? `${classes[0].name} to ${classes[classes.length - 1].name}` : classes[0]?.name;
+  const gallery = useQuery({ queryKey: ["gallery"], queryFn: () => api.get<GalleryPhoto[]>("/school/gallery/") });
+  const photos = gallery.data ?? [];
+  const nav = [
+    { href: "#admissions", label: "Admissions" },
+    ...(photos.length ? [{ href: "#gallery", label: "Gallery" }] : []),
+    { href: "#parents", label: "For parents" },
+    { href: "#sign-in", label: "Sign in" },
+    { href: "#contact", label: "Contact" },
+  ];
 
   // Links like /#sign-in from other pages land on the right section.
   useEffect(() => {
@@ -43,6 +53,9 @@ export default function Home() {
 
   const brand = school?.brand_colour ?? "#1d4ed8";
   const place = [school?.district, school?.state].filter(Boolean).join(", ");
+  const spot = school?.map_latitude != null && school.map_longitude != null ? `${school.map_latitude},${school.map_longitude}` : "";
+  const mapQuery = spot || [school?.name, school?.address, place, school?.pincode].filter(Boolean).join(", ");
+  const social = SOCIAL.filter((s) => school?.[s.key]);
 
   return (
     <div className="min-h-screen bg-[#fffaf3] text-foreground">
@@ -56,7 +69,7 @@ export default function Home() {
             <SchoolName school={school} className="flex min-w-0 items-center gap-2 [&>span]:truncate [&_img]:h-9 [&_img]:w-9" />
           </a>
           <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-            {NAV.map((n) => (
+            {nav.map((n) => (
               <a key={n.href} href={n.href} className="rounded-full px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:bg-primary-glow hover:text-primary">
                 {n.label}
               </a>
@@ -131,6 +144,16 @@ export default function Home() {
                   ))}
                 </ul>
               </div>
+            </div>
+          </section>
+        )}
+
+        {photos.length > 0 && (
+          <section id="gallery" aria-labelledby="gallery-heading" className="scroll-mt-16 bg-[#fffaf3]">
+            <div className="container py-14 md:py-20">
+              <SectionTitle id="gallery-heading" eyebrow="Gallery" title="Life at our school"
+                text="Celebrations, activities and everyday moments with our children." />
+              <Gallery photos={photos} />
             </div>
           </section>
         )}
@@ -223,11 +246,31 @@ export default function Home() {
               {(school?.address || place) && (
                 <Contact icon={<MapPin />} label="Address"
                   value={[school?.address, place, school?.pincode].filter(Boolean).join(", ")}
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([school?.name, school?.address, place, school?.pincode].filter(Boolean).join(", "))}`} />
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`} />
               )}
             </div>
           </div>
         </section>
+
+        {spot && (
+          <section aria-labelledby="map-heading" className="bg-[#fffaf3]">
+            <div className="container pb-14 md:pb-20">
+              <h2 id="map-heading" className="sr-only">Find us on the map</h2>
+              <div className="overflow-hidden rounded-3xl shadow-xl shadow-black/5 ring-1 ring-black/5">
+                <iframe title={`Map showing ${school?.name ?? "the school"}`} loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(spot)}&z=17&output=embed`}
+                  className="block h-80 w-full border-0 md:h-[28rem]" />
+              </div>
+              <p className="mt-3 text-center">
+                <Button asChild variant="link">
+                  <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(spot)}`} target="_blank" rel="noopener">
+                    Get directions <ArrowRight aria-hidden />
+                  </a>
+                </Button>
+              </p>
+            </div>
+          </section>
+        )}
       </main>
 
       <footer className="bg-[#1f1a33] text-white/70">
@@ -241,6 +284,18 @@ export default function Home() {
               <> · <a href={school.website} className="underline-offset-4 hover:underline" rel="noopener">{school.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a></>
             )}
           </p>
+          {social.length > 0 && (
+            <ul aria-label="Follow us" className="flex items-center gap-2">
+              {social.map((s) => (
+                <li key={s.key}>
+                  <a href={school?.[s.key]} target="_blank" rel="noopener" aria-label={s.label} title={s.label}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-primary [&_svg]:h-5 [&_svg]:w-5">
+                    {s.icon}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           <p>© {new Date().getFullYear()} {school?.name}</p>
         </div>
       </footer>
@@ -276,6 +331,31 @@ function SignIn() {
         <StaffLogin embedded />
       </TabsContent>
     </Tabs>
+  );
+}
+
+function Gallery({ photos }: { photos: GalleryPhoto[] }) {
+  const [open, setOpen] = useState<GalleryPhoto | null>(null);
+  return (
+    <>
+      <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {photos.map((p) => (
+          <li key={p.id}>
+            <button type="button" onClick={() => setOpen(p)}
+              className="group block w-full overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              <img src={galleryImageUrl(p.id)} alt={p.caption || "School photo"} loading="lazy"
+                className="aspect-square w-full object-cover transition duration-300 group-hover:scale-105 motion-reduce:transform-none" />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <Dialog open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
+        <DialogContent className="max-w-4xl p-3 sm:p-4">
+          <DialogTitle className={open?.caption ? "pr-8 text-base" : "sr-only"}>{open?.caption || "School photo"}</DialogTitle>
+          {open && <img src={galleryImageUrl(open.id)} alt={open.caption || "School photo"} className="max-h-[80vh] w-full rounded-lg object-contain" />}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

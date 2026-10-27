@@ -65,8 +65,8 @@ npm run dev          # http://localhost:8080
 
 ## Placeholders to replace with the school's real setup
 
-`seed_lkms_defaults` creates sample data only: classes Nursery to Class 8 with section A,
-sessions starting 1 April, age limits for Nursery/LKG/UKG, a sample document list, and sample
+`seed_lkms_defaults` creates sample data only: classes Play Group to Class 8 with section A,
+sessions starting 1 April, age limits for Play Group/Nursery/LKG/UKG, a sample document list, and sample
 fee heads, quarterly installments and amounts (change them in Fees → Fee setup).
 Change these in the admin once the school confirms its classes, sections, documents
 and admission number format (School profile → admission number prefix, width and next number).

@@ -9,7 +9,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import generics, mixins, viewsets
 from rest_framework import serializers as drf_serializers
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -17,9 +17,9 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from . import audit, captcha
-from .models import AuditLog, SchoolProfile
+from .models import AuditLog, GalleryPhoto, SchoolProfile
 from .permissions import Can
-from .serializers import AuditLogSerializer, PublicSchoolSerializer, SchoolProfileSerializer
+from .serializers import AuditLogSerializer, GalleryPhotoSerializer, PublicSchoolSerializer, SchoolProfileSerializer
 
 
 @extend_schema(responses=inline_serializer("Health", {"status": drf_serializers.CharField()}))
@@ -118,6 +118,32 @@ class SchoolProfileView(generics.RetrieveUpdateAPIView):
         after = SchoolProfileSerializer(obj).data
         changed = {k: [before[k], after[k]] for k in after if before.get(k) != after[k] and k != "updated_at"}
         audit.record(self.request, "school.updated", obj, changed=changed)
+
+
+class GalleryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    """The website's photo gallery: everyone can see it, the administrator adds and removes photos."""
+
+    queryset = GalleryPhoto.objects.all()
+    serializer_class = GalleryPhotoSerializer
+    parser_classes = [MultiPartParser, FormParser]
+    pagination_class = None
+
+    def get_permissions(self):
+        return [AllowAny()] if self.action in ("list", "image") else [Can("school.manage")()]
+
+    def perform_create(self, serializer):
+        photo = serializer.save(uploaded_by=self.request.user)
+        audit.record(self.request, "gallery.added", photo)
+
+    def perform_destroy(self, instance):
+        audit.record(self.request, "gallery.removed", instance)
+        instance.image.delete(save=False)
+        instance.delete()
+
+    @extend_schema(responses={(200, "image/jpeg"): OpenApiTypes.BINARY})
+    @action(detail=True)
+    def image(self, request, pk=None):
+        return _picture_response(self.get_object().image)
 
 
 class AuditLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
