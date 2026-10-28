@@ -7,6 +7,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { Hero3D } from "@/components/landing/Hero3D";
+import { PhotoReel } from "@/components/landing/PhotoReel";
 import { SchoolName } from "@/components/SchoolName";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -128,6 +129,15 @@ export default function Home() {
           </div>
           <Wave />
         </section>
+
+        {photos.length > 0 && (
+          <section aria-labelledby="reel-heading" className="bg-white">
+            <div className="container pt-8 md:pt-12">
+              <h2 id="reel-heading" className="sr-only">Moments from our school</h2>
+              <div className="mx-auto max-w-5xl"><PhotoReel photos={photos} /></div>
+            </div>
+          </section>
+        )}
 
         {/* Classes offered */}
         {classes.length > 0 && (
@@ -336,10 +346,12 @@ function SignIn() {
 
 function Gallery({ photos }: { photos: GalleryPhoto[] }) {
   const [open, setOpen] = useState<GalleryPhoto | null>(null);
+  const [all, setAll] = useState(false);
+  const FIRST = 8;
   return (
     <>
       <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {photos.map((p) => (
+        {(all ? photos : photos.slice(0, FIRST)).map((p) => (
           <li key={p.id}>
             <button type="button" onClick={() => setOpen(p)}
               className="group block w-full overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -349,6 +361,13 @@ function Gallery({ photos }: { photos: GalleryPhoto[] }) {
           </li>
         ))}
       </ul>
+      {!all && photos.length > FIRST && (
+        <p className="mt-6 text-center">
+          <Button type="button" variant="outline" className="rounded-full border-2 bg-white px-6" onClick={() => setAll(true)}>
+            Show all {photos.length} photos
+          </Button>
+        </p>
+      )}
       <Dialog open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent className="max-w-4xl p-3 sm:p-4">
           <DialogTitle className={open?.caption ? "pr-8 text-base" : "sr-only"}>{open?.caption || "School photo"}</DialogTitle>
