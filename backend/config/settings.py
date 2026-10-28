@@ -124,6 +124,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = Path(os.getenv("STATIC_ROOT", BASE_DIR / "staticfiles"))
+# The built React app; its index.html gets the school's search-engine tags (core.seo).
+FRONTEND_DIST = Path(os.getenv("FRONTEND_DIST", BASE_DIR.parent / "frontend" / "dist"))
 
 # Student documents and photos. Never served directly by the web server:
 # they are streamed through authenticated views (see core.storage).

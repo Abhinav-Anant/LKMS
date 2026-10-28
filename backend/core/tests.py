@@ -140,3 +140,23 @@ def test_printed_documents_carry_the_logo(client_for):
     school.logo.delete(save=False)  # file gone but still named: the header prints without it
     school.logo.name = "school/missing.png"
     assert draw_logo(pdf, school, 10, 800, 50) is False
+
+
+@pytest.mark.django_db
+def test_seo_pages(public, settings, tmp_path):
+    (tmp_path / "index.html").write_text("<html><head><title>School</title></head><body></body></html>")
+    settings.FRONTEND_DIST = tmp_path
+    SchoolProfile.objects.filter(pk=SchoolProfile.get().pk).update(
+        name="Sun </script> School", district="Jaipur", state="Rajasthan", website="https://www.example.in/",
+        instagram_url="https://instagram.com/sun")
+
+    home = public.get("/").content.decode()
+    assert "<title>Sun &lt;/script&gt; School, Jaipur</title>" in home
+    assert '<link rel="canonical" href="https://www.example.in/" />' in home
+    assert '"sameAs": ["https://instagram.com/sun"]' in home
+    assert "Sun </script>" not in home  # the name cannot break out of the JSON-LD script tag
+
+    assert "Apply for admission | Sun" in public.get("/apply").content.decode()
+    assert public.get("/staff").status_code == 404
+    assert "Sitemap: https://www.example.in/sitemap.xml" in public.get("/robots.txt").content.decode()
+    assert "<loc>https://www.example.in/track</loc>" in public.get("/sitemap.xml").content.decode()

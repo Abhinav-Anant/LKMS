@@ -97,7 +97,8 @@ export function useBranding() {
   const school = useSchool();
   useEffect(() => {
     if (!school) return;
-    document.title = school.name;
+    // Pages served with search-engine tags (core.seo) already carry a fuller title
+    if (!document.querySelector('link[rel="canonical"]')) document.title = school.name;
     applyColour(school.brand_colour);
     try {
       localStorage.setItem(BRAND_KEY, school.brand_colour);

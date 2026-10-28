@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from core import seo
+
 admin.site.site_header = "LKMS administration"
 admin.site.site_title = "LKMS"
 
@@ -24,4 +26,8 @@ urlpatterns = [
     path("api/v1/exams/", include("exams.urls")),
     path("api/v1/certificates/", include("certificates.urls")),
     path("api/v1/backups/", include("core.backup_urls")),
+    path("robots.txt", seo.robots),
+    path("sitemap.xml", seo.sitemap),
+    path("", seo.page),
+    path("<str:path>", seo.page),
 ]
