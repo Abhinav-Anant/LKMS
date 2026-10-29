@@ -13,7 +13,15 @@ def mask_aadhaar(value):
 class GuardianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Guardian
-        fields = ["id", "full_name", "phone", "alternate_phone", "email", "occupation", "qualification", "annual_income", "address"]
+        fields = ["id", "full_name", "phone", "alternate_phone", "email", "occupation", "qualification", "annual_income", "address",
+                  "aadhaar_number"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if not (request and has_capability(request.user, "students.view_sensitive")):
+            data["aadhaar_number"] = mask_aadhaar(instance.aadhaar_number)
+        return data
 
 
 class StudentGuardianSerializer(serializers.ModelSerializer):

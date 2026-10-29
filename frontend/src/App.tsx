@@ -37,6 +37,7 @@ import Login from "@/pages/staff/Login";
 import Notices from "@/pages/staff/Notices";
 import StudentDetail from "@/pages/staff/StudentDetail";
 import Students from "@/pages/staff/Students";
+import StudentImport from "@/pages/staff/StudentImport";
 import WhatsApp from "@/pages/staff/WhatsApp";
 import Attendance from "@/pages/staff/teaching/Attendance";
 import Marks from "@/pages/staff/teaching/Marks";
@@ -74,6 +75,7 @@ export default function App() {
               <Route path="applications" element={<Applications />} />
               <Route path="applications/:id" element={<ApplicationDetail />} />
               <Route path="students" element={<Students />} />
+              <Route path="students/import" element={<StudentImport />} />
               <Route path="students/:id" element={<StudentDetail />} />
               <Route path="fees" element={<Invoices />} />
               <Route path="fees/invoices/:id" element={<InvoiceDetail />} />

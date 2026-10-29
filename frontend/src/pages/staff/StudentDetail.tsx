@@ -95,6 +95,7 @@ export default function StudentDetail() {
                   ["Email", g.guardian.email],
                   ["Occupation", g.guardian.occupation],
                   ["Education", g.guardian.qualification],
+                  ["Aadhaar", g.guardian.aadhaar_number],
                 ]}
               />
               {can("students.edit") && s.status === "active" && g.guardian.phone && <ParentCodeButton phone={g.guardian.phone} />}

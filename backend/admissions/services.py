@@ -225,6 +225,9 @@ def admit(request, application, section, admission_date=None, roll_number=None):
         if not (name and phone):
             continue
         guardian = _find_or_create_guardian(name, phone, email, occupation, qualification, income, full_address)
+        if relationship == application.primary_contact and application.parent_aadhaar_number and not guardian.aadhaar_number:
+            guardian.aadhaar_number = application.parent_aadhaar_number
+            guardian.save(update_fields=["aadhaar_number", "updated_at"])
         StudentGuardian.objects.create(
             student=student, guardian=guardian, relationship=relationship, relationship_detail=detail,
             is_primary_contact=(relationship == application.primary_contact),

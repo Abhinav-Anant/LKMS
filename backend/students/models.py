@@ -73,6 +73,7 @@ class Guardian(models.Model):
     qualification = models.CharField(max_length=100, blank=True)
     annual_income = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     address = models.TextField(blank=True)
+    aadhaar_number = models.CharField(max_length=12, blank=True, validators=[validate_aadhaar])
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="guardian_profile",
         help_text="Parent portal login (Phase 3)",
