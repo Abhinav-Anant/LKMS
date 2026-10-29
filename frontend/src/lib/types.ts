@@ -205,6 +205,7 @@ export interface Guardian {
   qualification: string;
   annual_income: string | null;
   address: string;
+  aadhaar_number: string;
 }
 
 export interface StudentDetail {

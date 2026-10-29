@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { STUDENT_STATUS_LABELS, formatDate } from "@/lib/labels";
 import type { Paginated, SchoolClass, Section, StudentListItem } from "@/lib/types";
 
 export default function Students() {
   const [params, setParams] = useSearchParams();
+  const { can } = useAuth();
   const filters = {
     status: params.get("status") ?? "active",
     class: params.get("class") ?? "",
@@ -50,7 +52,14 @@ export default function Students() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Students</h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">Students</h1>
+        {can("students.import") && (
+          <Button asChild variant="outline">
+            <Link to="/staff/students/import">Import students</Link>
+          </Button>
+        )}
+      </div>
       <form role="search" className="grid gap-3 rounded-lg border bg-background p-4 sm:grid-cols-2 lg:grid-cols-4" onSubmit={(e) => e.preventDefault()}>
         <label className="space-y-1 text-sm">
           <span className="font-medium">Search</span>
@@ -120,7 +129,7 @@ export default function Students() {
             {list.data && list.data.results.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
-                  No students match. Students appear here once an application is admitted.
+                  No students match. Students appear here once an application is admitted or a student list is imported.
                 </TableCell>
               </TableRow>
             )}

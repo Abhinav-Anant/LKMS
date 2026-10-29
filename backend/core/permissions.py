@@ -8,6 +8,7 @@ CAPABILITIES = {
     "students.view": {"admin", "principal", "office"},
     "students.edit": {"admin", "principal", "office"},
     "students.view_sensitive": {"admin", "principal"},
+    "students.import": {"admin", "principal"},
     "academics.view": {"admin", "principal", "office", "accountant", "teacher"},
     "academics.manage": {"admin", "principal"},
     "school.manage": {"admin"},

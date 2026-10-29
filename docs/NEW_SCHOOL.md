@@ -101,3 +101,4 @@ To fill in the school's details with no questions at all (for example when prepa
 - Link the school's WhatsApp phone (`DEPLOY.md` step 7) and check the backups (step 8).
 - Give each staff member their username and temporary password.
 - Go through the checklist at the end of `DEPLOY.md` before the school starts using it.
+- Bring in the children already studying there with **Students > Import students** (see `STUDENT_IMPORT.md`).
