@@ -1,36 +1,36 @@
 # Graph Report - landing-page-background-photo-52719e  (2026-11-02)
 
 ## Corpus Check
-- 450 files · ~176,593 words
+- 450 files · ~181,446 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 19 file(s) not represented in the graph (top: (none) 5, .service 4, .example 3)
 
 ## Summary
-- 3445 nodes · 8803 edges · 167 communities (120 shown, 23 thin omitted)
+- 3439 nodes · 8792 edges · 168 communities (121 shown, 23 thin omitted)
 - Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 745 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0031a38e`
+- Built from commit: `ec91c26c`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - lib/types.ts
 - whatsapp.service.ts
-- GradeBand
-- cn
-- utils.ts
-- AcademicSession
-- app.ts
 - exams/views.py
+- cn
+- App.tsx
+- SchoolProfile
+- app.ts
+- academics/models.py
 - django_db
-- certificates/services.py
+- utils.ts
 - admissions/views.py
 - frontend/package.json
 - setup_school.py
 - core/backup.py
-- assessments/views.py
+- AssessmentViewSet
 - dependencies
 - admissions/tests.py
 - react
@@ -43,24 +43,24 @@
 - users/views.py
 - portal/views.py
 - Invoice
-- academics/views.py
+- SchoolClass
 - bulk_import.py
 - formatDate
 - AdmissionApplication
-- SchoolProfile
+- hooks/use-toast.ts
 - fees/views.py
-- campaign.service.ts
+- whatsapp-report.service.ts
 - as_api_errors
 - sidebar.tsx
-- App.tsx
-- auth.controller.ts
-- Enrollment
-- chat.service.ts
+- Setup.tsx
+- auth.service.ts
+- report_table
+- campaign.service.ts
 - ISafeModeStore
-- AuditLog
+- core/views.py
 - dependencies
 - fees/services.py
-- openai-assistant.service.ts
+- auth.controller.ts
 - PrivateStorage
 - OutgoingMessage
 - toast.tsx
@@ -68,19 +68,19 @@
 - RedisSafeModeStore
 - lucide-react
 - as_user
-- message.service.ts
+- knowledgeEngine.ts
 - pagination.tsx
 - reminder.service.ts
 - Student
 - devDependencies
 - MemorySafeModeStore
-- AttendanceRecord
-- core/models.py
-- attendance/tests.py
+- has_capability
+- message.service.ts
+- mongoose
 - messaging/views.py
 - HeroScene.tsx
 - safemode/index.ts
-- conftest.py
+- User
 - compilerOptions
 - compilerOptions
 - templates.py
@@ -89,45 +89,45 @@
 - api.ts
 - send.controller.ts
 - fees/admin.py
-- apikey.controller.ts
+- test_setup_school.py
 - outbox.py
 - devDependencies
-- ExamTermViewSet
+- apikey.controller.ts
 - components.json
 - compilerOptions
-- report.py
-- Message.ts
+- local-reply.service.ts
+- seo.py
 - whatsapp.py
 - carousel.tsx
 - captcha.py
-- whatsapp-report.service.ts
+- Notice
 - test_setup_wizard.py
 - parent_login.py
 - whatsapp-builder.service.ts
 - test_captcha.py
-- admissions/models.py
+- Enrollment
 - chart.tsx
 - compilerOptions
 - Blastup WhatsApp server (kalpintelligence/Blastup)
 - VPS deployment guide (Ubuntu 24.04)
-- students/tests.py
+- core/models.py
 - SchoolProfileSerializer
 - StudentImportView
 - widget.js
-- AuditLogAdmin
+- conftest.py
 - LKMS school management system
 - UPI QR payment with staff verification
 - Invoice and receipt numbering
 - navigation-menu.tsx
-- sheet.tsx
+- SafeModeManager
 - WhatsApp alerts
 - Admission workflow (submitted to admitted)
-- scripts
+- attendance/tests.py
 - campaign.controller.ts
-- breadcrumb.tsx
+- drawer.tsx
 - Board/school format checklist
 - scripts
-- drawer.tsx
+- Command
 - send_whatsapp.py
 - certificates/tests.py
 - _FakeBlastup
@@ -155,10 +155,11 @@
 - wsgi.py
 - 0004_school_branding_and_payments.py
 - update.sh
-- Command
+- sheet.tsx
 - lkms-backend
-- scroll-area.tsx
+- scripts
 - CLAUDE.md
+- contact.controller.ts
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 254 edges
@@ -177,12 +178,12 @@
   docs/ADMISSIONS.md → docs/ACHARYA_README.md
 - `robots.txt disallow all` --conceptually_related_to--> `whatsapp service (Blastup server)`  [INFERRED]
   whatsapp-server/server/public/robots.txt → docker-compose.yml
+- `test_only_one_current_session()` --uses--> `AcademicSession`  [INFERRED]
+  backend/academics/tests.py → backend/academics/models.py
 - `test_form_filled_by_a_bot_is_refused()` --uses--> `AdmissionApplication`  [INFERRED]
   backend/admissions/tests.py → backend/admissions/models.py
 - `AttendanceDaySerializer` --uses--> `AttendanceRecord`  [INFERRED]
   backend/portal/serializers.py → backend/attendance/models.py
-- `test_every_report_runs()` --uses--> `AttendanceRecord`  [INFERRED]
-  backend/portal/test_tables.py → backend/attendance/models.py
 
 ## Import Cycles
 - None detected.
@@ -192,47 +193,47 @@
 - **Scheduled server jobs (backup, fee reminders, WhatsApp sender)** — docs_backups_lkms_backup_timer, docs_deploy_lkms_fee_reminders_timer, docs_deploy_lkms_whatsapp_sender, docs_deploy_vps_deployment [EXTRACTED 1.00]
 - **Invoice to UPI payment to staff-verified receipt** — docs_fees_invoice, docs_fees_pay_link, docs_fees_upi_qr_payment, docs_fees_send_fee_reminders, docs_whatsapp_whatsapp_alerts [EXTRACTED 1.00]
 
-## Communities (167 total, 23 thin omitted)
+## Communities (168 total, 23 thin omitted)
 
 ### Community 0 - "lib/types.ts"
-Cohesion: 0.05
-Nodes (41): ATTENDANCE_LABELS, useChildren(), ApplicationListItem, AttendanceMonthRow, AttendanceSheet, AttendanceStatus, BackupStatus, Child (+33 more)
+Cohesion: 0.04
+Nodes (51): ATTENDANCE_LABELS, CONCESSION_STATUS_LABELS, useChildren(), ApplicationListItem, AttendanceMonthRow, AttendanceSheet, AttendanceStatus, BackupStatus (+43 more)
 
 ### Community 1 - "whatsapp.service.ts"
-Cohesion: 0.07
-Nodes (38): pino, qrcode, chatbotRuleSchema, chatbotSchema, IChatbot, IChatbotFlowNode, IChatbotRule, InstanceStatus (+30 more)
+Cohesion: 0.09
+Nodes (32): InstanceStatus, IWhatsAppInstance, WhatsAppInstance, whatsAppInstanceSchema, recordKnownChatsFromStore(), wrapBaileysSocket(), ApiRequestNode, connectingStates (+24 more)
 
-### Community 2 - "GradeBand"
-Cohesion: 0.11
-Nodes (15): ExamTerm, GradeBand, Meta, One row of the grading scale: a percentage of at least `min_percent` earns…, What the class teacher adds to a student's report card for a term., A reporting period that groups tests into one report card, e.g. Half-yearly or…, ReportCardEntry, ExamTermSerializer (+7 more)
+### Community 2 - "exams/views.py"
+Cohesion: 0.05
+Nodes (52): Command, atomic, BaseCommand, Create sample school data (classes, documents, fees, subjects, periods) for…, Document types, subjects, periods and the grade scale. Existing rows are kept., seed_reference_data(), bands(), grade_for() (+44 more)
 
 ### Community 3 - "cn"
 Cohesion: 0.05
-Nodes (58): navClass(), navClass(), Avatar, AvatarFallback, AvatarImage, Card, CardContent, CardDescription (+50 more)
+Nodes (62): navClass(), navClass(), Avatar, AvatarFallback, AvatarImage, Card, CardContent, CardDescription (+54 more)
 
-### Community 4 - "utils.ts"
-Cohesion: 0.08
-Nodes (25): App(), PhotoReel(), PublicLayout(), SchoolName(), StaffLayout(), apiUrl(), applyColour(), applyRememberedBranding() (+17 more)
-
-### Community 5 - "AcademicSession"
+### Community 4 - "App.tsx"
 Cohesion: 0.06
-Nodes (44): AcademicSessionAdmin, EnrollmentAdmin, register, SchoolClassAdmin, SectionAdmin, TeachingAssignmentAdmin, TimetableEntryAdmin, AcademicSession (+36 more)
+Nodes (44): App(), queryClient, PhotoReel(), PublicLayout(), SchoolName(), StaffHome(), StaffLayout(), apiUrl() (+36 more)
+
+### Community 5 - "SchoolProfile"
+Cohesion: 0.11
+Nodes (15): _d(), Transfer certificate PDF. PLACEHOLDER layout until the school gives its…, tc_pdf(), The single school this installation serves. Only one row is allowed., Take the next number from the admission register. Call inside a transaction., SchoolProfile, _fit(), Command (+7 more)
 
 ### Community 6 - "app.ts"
-Cohesion: 0.06
-Nodes (39): compression, cookie-parser, express, express-rate-limit, swagger-jsdoc, swagger-ui-express, getMessages(), authenticate() (+31 more)
+Cohesion: 0.07
+Nodes (40): compression, cookie-parser, express, express-rate-limit, multer, swagger-jsdoc, swagger-ui-express, getMessages() (+32 more)
 
-### Community 7 - "exams/views.py"
+### Community 7 - "academics/models.py"
 Cohesion: 0.05
-Nodes (30): Sections the user teaches in (as class teacher or subject teacher), current…, teacher_sections(), BackupFileSerializer, Can(), has_permission(), has_capability(), BasePermission, The roles holding a capability, including the school's own choices in its… (+22 more)
+Nodes (43): Who teaches which subject in which section. Gives the teacher marks entry for…, TeachingAssignment, can_enter_marks(), can_take_attendance(), Which sections a staff member may work with. Admin and principal may work with…, Sections the user teaches in (as class teacher or subject teacher), current…, sees_all(), teacher_sections() (+35 more)
 
 ### Community 8 - "django_db"
 Cohesion: 0.03
-Nodes (39): Migration, Migration, Migration, Migration, Migration, Migration, Migration, Migration (+31 more)
+Nodes (42): Migration, Migration, Migration, Migration, Migration, Migration, Migration, Migration (+34 more)
 
-### Community 9 - "certificates/services.py"
-Cohesion: 0.06
-Nodes (34): register, TransferCertificateAdmin, Meta, A school leaving / transfer certificate. Requested by the office, issued by the…, Status, TransferCertificate, CancelSerializer, IssueSerializer (+26 more)
+### Community 9 - "utils.ts"
+Cohesion: 0.11
+Nodes (17): Label, labelVariants, ToggleGroupContext, ToggleGroupItem, Toggle, toggleVariants, WHATSAPP_EVENT_LABELS, OptOut (+9 more)
 
 ### Community 10 - "admissions/views.py"
 Cohesion: 0.06
@@ -240,7 +241,7 @@ Nodes (46): AdmissionApplicationAdmin, DocumentInline, DocumentTypeAdmin, Histor
 
 ### Community 11 - "frontend/package.json"
 Cohesion: 0.04
-Nodes (45): eslint, @types/node, typescript, zod, name, private, type, version (+37 more)
+Nodes (47): eslint, @types/node, typescript, zod, name, private, type, version (+39 more)
 
 ### Community 12 - "setup_school.py"
 Cohesion: 0.09
@@ -250,129 +251,125 @@ Nodes (35): current_session_dates(), Answers, ask(), ask_yes(), bell_times(), ch
 Cohesion: 0.06
 Nodes (49): backup_dir(), BackupError, check(), copy_offsite(), create_backup(), _db(), _dump_database(), _last_migrations() (+41 more)
 
-### Community 14 - "assessments/views.py"
-Cohesion: 0.11
-Nodes (23): Who teaches which subject in which section. Gives the teacher marks entry for…, TeachingAssignment, can_enter_marks(), can_take_attendance(), Which sections a staff member may work with. Admin and principal may work with…, sees_all(), AssessmentSerializer, MarkRowSerializer (+15 more)
+### Community 14 - "AssessmentViewSet"
+Cohesion: 0.14
+Nodes (12): AssessmentSerializer, MarkRowSerializer, MarkSheetRowSerializer, MarkSheetSerializer, Meta, SaveMarksSerializer, AssessmentViewSet, action (+4 more)
 
 ### Community 15 - "dependencies"
 Cohesion: 0.04
 Nodes (53): dependencies, axios, class-variance-authority, clsx, cmdk, date-fns, embla-carousel-react, fflate (+45 more)
 
 ### Community 16 - "admissions/tests.py"
-Cohesion: 0.15
-Nodes (26): apply(), approved_application(), test_aadhaar_is_masked_for_office_staff(), test_admit_checks_section_class_and_capacity(), test_admit_creates_student_guardians_and_enrollment(), test_application_numbers_are_sequential(), test_approval_waits_for_verified_documents(), test_decided_application_cannot_be_edited_or_receive_documents() (+18 more)
+Cohesion: 0.07
+Nodes (37): apply(), approved_application(), test_aadhaar_is_masked_for_office_staff(), test_admit_checks_section_class_and_capacity(), test_admit_creates_student_guardians_and_enrollment(), test_application_numbers_are_sequential(), test_approval_waits_for_verified_documents(), test_decided_application_cannot_be_edited_or_receive_documents() (+29 more)
 
 ### Community 17 - "react"
-Cohesion: 0.08
-Nodes (50): CaptchaGate(), Challenge, Field(), FieldProps, OneTimeSecret(), Panel(), Alert, AlertDescription (+42 more)
+Cohesion: 0.13
+Nodes (36): CaptchaGate(), Challenge, Field(), FieldProps, ErrorNote(), Panel(), Alert, AlertDescription (+28 more)
 
 ### Community 18 - "labels.ts"
 Cohesion: 0.05
-Nodes (50): ACCEPT, DocumentUploader(), Props, UploadedState, INVOICE_STYLE, STATUS_STYLE, StatusBadge(), VERIFICATION_ICON (+42 more)
+Nodes (53): ACCEPT, DocumentUploader(), Props, UploadedState, OneTimeSecret(), INVOICE_STYLE, STATUS_STYLE, StatusBadge() (+45 more)
 
 ### Community 19 - "InvoiceDetail.tsx"
-Cohesion: 0.11
-Nodes (34): NativeSelect(), ErrorNote(), InvoiceBadge(), Table, TableBody, TableCell, TableFooter, TableHead (+26 more)
+Cohesion: 0.17
+Nodes (25): NativeSelect(), InvoiceBadge(), Table, TableBody, TableCell, TableFooter, TableHead, TableHeader (+17 more)
 
 ### Community 20 - "setup_wizard.py"
 Cohesion: 0.08
 Nodes (43): ask(), ask_settings(), ask_yes(), backend_values(), check_absolute(), check_db_name(), check_domain(), check_email() (+35 more)
 
 ### Community 21 - "chatbot.controller.ts"
-Cohesion: 0.07
-Nodes (33): handleWidgetMessage(), replyToLead(), updateChatbot(), testKnowledgeQuery(), Chatbot, ChatbotKnowledge, chatbotKnowledgeSchema, IChatbotKnowledge (+25 more)
+Cohesion: 0.08
+Nodes (21): handleWidgetMessage(), replyToLead(), updateChatbot(), testKnowledgeQuery(), Chatbot, chatbotRuleSchema, chatbotSchema, IChatbot (+13 more)
 
 ### Community 22 - "env.ts"
-Cohesion: 0.10
-Nodes (35): mongoose, socket.io, winston, createApp(), attemptConnection(), connectDatabase(), disconnectDatabase(), Env (+27 more)
+Cohesion: 0.12
+Nodes (28): socket.io, createApp(), attemptConnection(), connectDatabase(), Env, envSchema, localEnv, parsed (+20 more)
 
 ### Community 23 - "server/package.json"
 Cohesion: 0.04
-Nodes (45): bcryptjs, cors, dotenv, express-mongo-sanitize, express-validator, helmet, hpp, ioredis (+37 more)
+Nodes (46): bcryptjs, cors, express-mongo-sanitize, express-validator, helmet, hpp, ioredis, jest (+38 more)
 
 ### Community 24 - "users/views.py"
 Cohesion: 0.06
 Nodes (35): ChangePasswordSerializer, IssuedCodeSerializer, LoginSerializer, MeSerializer, Meta, _mobile(), ParentCodeRequestSerializer, ParentCodeVerifySerializer (+27 more)
 
 ### Community 25 - "portal/views.py"
-Cohesion: 0.11
-Nodes (37): pdf_download(), Mode, Payment, pdf_response(), AlertsPreferenceSerializer, parent_notices(), Published notices a parent with children in `sections` should see., AttendanceDaySerializer (+29 more)
+Cohesion: 0.10
+Nodes (39): pdf_download(), Mode, Payment, pdf_response(), AlertsPreferenceSerializer, Meta, ParentNoticeSerializer, parent_notices() (+31 more)
 
 ### Community 26 - "Invoice"
 Cohesion: 0.11
 Nodes (35): FeeHead, Invoice, What one student owes for one installment., A kind of charge, e.g. Tuition fee, Admission fee, Annual charges., class1(), frontend_url(), generate(), invoice() (+27 more)
 
-### Community 27 - "academics/views.py"
-Cohesion: 0.09
-Nodes (32): TimetableEntry, Weekday, AcademicSessionSerializer, EnrollmentSerializer, Meta, PeriodSlotSerializer, SchoolClassSerializer, SectionSerializer (+24 more)
+### Community 27 - "SchoolClass"
+Cohesion: 0.06
+Nodes (48): AcademicSessionAdmin, EnrollmentAdmin, register, SchoolClassAdmin, SectionAdmin, TeachingAssignmentAdmin, TimetableEntryAdmin, Meta (+40 more)
 
 ### Community 28 - "bulk_import.py"
-Cohesion: 0.08
-Nodes (39): _aadhaar(), attach_photos(), check(), fail(), take(), _choice(), _class_lookup(), Column (+31 more)
+Cohesion: 0.06
+Nodes (57): Migration, get_private_storage(), Private file storage for student documents and photos. Files live under…, GuardianAdmin, register, StudentAdmin, StudentGuardianInline, _aadhaar() (+49 more)
 
 ### Community 29 - "formatDate"
-Cohesion: 0.09
-Nodes (35): formatDate(), formatMoney(), todayISO(), UPI_QR_URL, Dashboard, PayPage, PublicInvoice, AttendanceTab() (+27 more)
+Cohesion: 0.07
+Nodes (37): formatDate(), formatMoney(), todayISO(), Dashboard, FeeAmount, Installment, PayPage, PublicInvoice (+29 more)
 
 ### Community 30 - "AdmissionApplication"
-Cohesion: 0.13
-Nodes (20): AdmissionApplication, hash_token(), Allocate the next application number for a session, e.g. LK-2026-27-00001., Status, add_document(), admit(), age_on(), approve() (+12 more)
-
-### Community 31 - "SchoolProfile"
 Cohesion: 0.15
-Nodes (12): The single school this installation serves. Only one row is allowed., Take the next number from the admission register. Call inside a transaction., SchoolProfile, _base_url(), _class_range(), _head(), page(), What search engines and link previews see: the React app's index.html with the… (+4 more)
+Nodes (19): AdmissionApplication, hash_token(), Allocate the next application number for a session, e.g. LK-2026-27-00001., Status, add_document(), admit(), age_on(), approve() (+11 more)
+
+### Community 31 - "hooks/use-toast.ts"
+Cohesion: 0.17
+Nodes (14): Toaster(), Action, ActionType, actionTypes, addToRemoveQueue(), dispatch(), genId(), listeners (+6 more)
 
 ### Community 32 - "fees/views.py"
-Cohesion: 0.09
-Nodes (37): client_ip(), Installment, A point in the session when fees fall due, e.g. Quarter 1 due 10 April., ConcessionSerializer, DecisionSerializer, FeeAmountBulkSerializer, FeeAmountRowSerializer, FeeAmountSerializer (+29 more)
+Cohesion: 0.10
+Nodes (35): client_ip(), Installment, A point in the session when fees fall due, e.g. Quarter 1 due 10 April., ApproveUpiSerializer, DecisionSerializer, FeeAmountBulkSerializer, FeeAmountRowSerializer, FeeAmountSerializer (+27 more)
 
-### Community 33 - "campaign.service.ts"
-Cohesion: 0.14
-Nodes (15): getCampaign(), Campaign, campaignSchema, ICampaign, ICampaignButton, ICampaignSliderItem, CampaignLog, campaignLogSchema (+7 more)
+### Community 33 - "whatsapp-report.service.ts"
+Cohesion: 0.18
+Nodes (15): DeliveryStatus, historyEntrySchema, IReminder, Reminder, ReminderActionType, reminderSchema, ReminderStatus, campaignReport() (+7 more)
 
 ### Community 34 - "as_api_errors"
-Cohesion: 0.11
-Nodes (16): as_api_errors(), Turn validation errors raised by the services into 400 responses., ApproveUpiSerializer, ReasonSerializer, UpiSubmissionSerializer, ConcessionViewSet, PaymentViewSet, action (+8 more)
+Cohesion: 0.10
+Nodes (18): as_api_errors(), Turn validation errors raised by the services into 400 responses., ConcessionSerializer, PaymentSerializer, ReasonSerializer, ConcessionViewSet, DailyCollectionView, InvoiceViewSet (+10 more)
 
 ### Community 35 - "sidebar.tsx"
 Cohesion: 0.07
 Nodes (32): Separator, Sidebar, SidebarContent, SidebarContext, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent (+24 more)
 
-### Community 36 - "App.tsx"
-Cohesion: 0.06
-Nodes (49): queryClient, StaffHome(), TimetableGrid(), TabsContent, TabsList, TabsTrigger, ALL, sectionLabel() (+41 more)
+### Community 36 - "Setup.tsx"
+Cohesion: 0.10
+Nodes (28): TimetableGrid(), TabsContent, TabsList, TabsTrigger, ALL, sectionLabel(), useSections(), useSessions() (+20 more)
 
-### Community 37 - "auth.controller.ts"
-Cohesion: 0.09
-Nodes (22): jsonwebtoken, changePassword(), COOKIE_OPTIONS, getAICreditStatus(), login(), logout(), register(), updateAISettings() (+14 more)
-
-### Community 38 - "Enrollment"
-Cohesion: 0.09
-Nodes (31): Enrollment, A student's place in a section for one session., Status, _backups(), dashboard(), DashboardSerializer, api_view, extend_schema (+23 more)
-
-### Community 39 - "chat.service.ts"
-Cohesion: 0.09
-Nodes (27): deleteMessage(), getChat(), getChats(), markRead(), listLeads(), deleteContact(), getContact(), getContacts() (+19 more)
-
-### Community 40 - "ISafeModeStore"
+### Community 37 - "auth.service.ts"
 Cohesion: 0.12
-Nodes (4): SafeModeManager, ISafeModeStore, wrapBaileysSocket(), main()
+Nodes (15): @hapi/boom, jsonwebtoken, login(), register(), ISession, Session, sessionSchema, LoginParams (+7 more)
 
-### Community 41 - "AuditLog"
-Cohesion: 0.09
-Nodes (26): AuditLog, GalleryPhoto, Meta, A photo of school life, shown to everyone on the website's gallery., Append-only record of who did what to student data., AuditLogSerializer, GalleryPhotoSerializer, Meta (+18 more)
+### Community 38 - "report_table"
+Cohesion: 0.47
+Nodes (6): _plain(), api_view, extend_schema, permission_classes, report_list(), report_table()
+
+### Community 39 - "campaign.service.ts"
+Cohesion: 0.07
+Nodes (31): deleteMessage(), getChats(), listLeads(), getContact(), Campaign, campaignSchema, ICampaign, ICampaignButton (+23 more)
+
+### Community 41 - "core/views.py"
+Cohesion: 0.10
+Nodes (21): AuditLogSerializer, GalleryPhotoSerializer, Meta, PublicSchoolSerializer, Photos are re-saved as JPEG, at most 1600 px wide, without the camera's details…, AuditLogViewSet, CaptchaView, GalleryViewSet (+13 more)
 
 ### Community 42 - "dependencies"
 Cohesion: 0.07
 Nodes (30): dependencies, bcryptjs, compression, cookie-parser, cors, dotenv, express, express-mongo-sanitize (+22 more)
 
 ### Community 43 - "fees/services.py"
-Cohesion: 0.08
-Nodes (41): Write an audit entry for `obj`. `request` may be None for system actions., record(), Remind parents about fees due soon or overdue. Run daily, e.g. from cron: 0 9 *…, Concession, InvoiceLine, Kind, Meta, A parent's report that they paid by scanning the school's UPI QR code. Nothing… (+33 more)
+Cohesion: 0.07
+Nodes (44): Write an audit entry for `obj`. `request` may be None for system actions., record(), Counter, Gap-free running numbers, e.g. receipt numbers per session., Return the next number for `key`. Call inside a transaction so a rollback…, Remind parents about fees due soon or overdue. Run daily, e.g. from cron: 0 9 *…, Concession, InvoiceLine (+36 more)
 
-### Community 44 - "openai-assistant.service.ts"
-Cohesion: 0.21
-Nodes (15): AITrainingMessage, schema, aiConversationMemory, AIRoute, checkOpenAICreditAvailability(), CloudProvider, generateChatReply(), getChatReplyMode() (+7 more)
+### Community 44 - "auth.controller.ts"
+Cohesion: 0.10
+Nodes (27): disconnectDatabase(), changePassword(), COOKIE_OPTIONS, getAICreditStatus(), logout(), updateAISettings(), IUser, User (+19 more)
 
 ### Community 45 - "PrivateStorage"
 Cohesion: 0.33
@@ -383,68 +380,72 @@ Cohesion: 0.14
 Nodes (30): Kind, Meta, OutgoingMessage, One WhatsApp message: queued by `core.notify`, sent by the `send_whatsapp`…, Status, Send what is due, within the per-minute limit. Returns how many were sent., send_due(), _alerts() (+22 more)
 
 ### Community 47 - "toast.tsx"
-Cohesion: 0.22
-Nodes (12): Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps, ToastTitle, toastVariants (+4 more)
+Cohesion: 0.26
+Nodes (10): Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps, ToastTitle, toastVariants (+2 more)
 
 ### Community 48 - "form.tsx"
-Cohesion: 0.17
-Nodes (14): FormControl, FormDescription, FormFieldContext, FormFieldContextValue, FormItem, FormItemContext, FormItemContextValue, FormLabel (+6 more)
+Cohesion: 0.10
+Nodes (20): Breadcrumb, BreadcrumbEllipsis(), BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator(), FormControl (+12 more)
 
 ### Community 50 - "lucide-react"
 Cohesion: 0.09
 Nodes (18): AccordionContent, AccordionItem, AccordionTrigger, Checkbox, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot (+10 more)
 
 ### Community 51 - "as_user"
-Cohesion: 0.12
-Nodes (19): create_test(), test_marks_above_maximum_are_refused(), test_subject_teacher_enters_and_publishes_marks(), test_teacher_cannot_create_tests_for_subjects_they_do_not_teach(), test_teachers_only_see_their_own_subjects(), as_user(), test_class_result_sheet(), test_class_teacher_writes_remarks_but_subject_teacher_cannot() (+11 more)
+Cohesion: 0.14
+Nodes (18): create_test(), test_marks_above_maximum_are_refused(), test_subject_teacher_enters_and_publishes_marks(), test_teacher_cannot_create_tests_for_subjects_they_do_not_teach(), test_teachers_only_see_their_own_subjects(), as_user(), test_class_result_sheet(), test_class_teacher_writes_remarks_but_subject_teacher_cannot() (+10 more)
 
-### Community 52 - "message.service.ts"
-Cohesion: 0.15
-Nodes (24): @whiskeysockets/baileys, Chat, chatSchema, IChat, contactSchema, IContact, fetchBuffer(), getConnectedSocket() (+16 more)
+### Community 52 - "knowledgeEngine.ts"
+Cohesion: 0.19
+Nodes (17): IChatbotKnowledge, buildSuggestions(), detectIntent(), expandWithContext(), getSession(), Intent, INTENT_PATTERNS, MatchResult (+9 more)
 
 ### Community 53 - "pagination.tsx"
 Cohesion: 0.09
 Nodes (22): AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter(), AlertDialogHeader(), AlertDialogOverlay, AlertDialogTitle (+14 more)
 
 ### Community 54 - "reminder.service.ts"
-Cohesion: 0.18
-Nodes (22): createReminderFromMessage(), createSendMessage(), deliveryJid(), directPhoneContact(), findContacts(), flexibleSend(), handleReminderCommand(), isDuplicateSourceMessage() (+14 more)
+Cohesion: 0.17
+Nodes (24): Contact, IContact, createReminderFromMessage(), createSendMessage(), deliveryJid(), directPhoneContact(), findContacts(), flexibleSend() (+16 more)
 
 ### Community 55 - "Student"
-Cohesion: 0.21
-Nodes (19): Status, Student, admin(), jpeg(), photo_zip(), fixture, row(), sheet() (+11 more)
+Cohesion: 0.08
+Nodes (38): AcademicSession, A school year, e.g. 2026-27 (1 April to 31 March)., Section, Current-session Class 1 A with two students (siblings share a father), a class…, school(), test_green_valley_from_its_answers_file_without_questions(), band(), Command (+30 more)
 
 ### Community 56 - "devDependencies"
 Cohesion: 0.08
 Nodes (24): devDependencies, eslint, jest, prettier, ts-jest, ts-node, ts-node-dev, @types/bcryptjs (+16 more)
 
-### Community 58 - "AttendanceRecord"
-Cohesion: 0.12
-Nodes (20): AttendanceRecordAdmin, register, AttendanceRecord, Meta, One student's attendance for one school day, marked by the class teacher., Status, AttendanceMarkSerializer, AttendanceRowSerializer (+12 more)
-
-### Community 59 - "core/models.py"
+### Community 57 - "MemorySafeModeStore"
 Cohesion: 0.14
-Nodes (19): _d(), Transfer certificate PDF. PLACEHOLDER layout until the school gives its…, tc_pdf(), A CAPTCHA challenge or pass that has been used, so it cannot be used again., UsedCaptcha, draw_logo(), draw_report_card(), grid_row() (+11 more)
+Nodes (4): defaultState(), MemorySafeModeStore, PhoneState, todayUtc()
 
-### Community 60 - "attendance/tests.py"
-Cohesion: 0.53
-Nodes (8): payload(), school_day(), test_class_teacher_marks_and_corrects_attendance(), test_future_dates_and_old_dates_are_refused_for_teachers(), test_month_summary(), test_students_from_other_sections_are_refused(), test_subject_teacher_can_view_but_not_mark(), test_teacher_of_another_class_cannot_see_the_register()
+### Community 58 - "has_capability"
+Cohesion: 0.08
+Nodes (17): has_permission(), has_capability(), The roles holding a capability, including the school's own choices in its…, roles_for(), NoticeViewSet, Staff notice board. Managers (admin, principal, office) post to anyone;…, Queue the notice on WhatsApp once, for parents of the chosen sections (or the…, send_to_parents() (+9 more)
+
+### Community 59 - "message.service.ts"
+Cohesion: 0.21
+Nodes (22): getChat(), markRead(), executeCampaign(), getChatById(), markChatRead(), fetchBuffer(), getConnectedSocket(), persistOutgoingMessage() (+14 more)
+
+### Community 60 - "mongoose"
+Cohesion: 0.13
+Nodes (14): mongoose, @whiskeysockets/baileys, Chat, chatSchema, IChat, contactSchema, IMessage, Message (+6 more)
 
 ### Community 61 - "messaging/views.py"
 Cohesion: 0.16
 Nodes (11): OptOut, A number that asked not to get WhatsApp alerts. Sign-in codes the parent asks…, Meta, OptOutSerializer, OutgoingMessageSerializer, QrSerializer, WhatsAppStatusSerializer, OptOutViewSet (+3 more)
 
 ### Community 62 - "HeroScene.tsx"
-Cohesion: 0.16
-Nodes (18): canRun3D(), Hero3D(), HeroFallback(), HeroScene, apple(), beachBall(), blockFace(), book() (+10 more)
+Cohesion: 0.21
+Nodes (13): canRun3D(), Hero3D(), HeroFallback(), HeroScene, blockFace(), build(), canvas(), HeroScene() (+5 more)
 
 ### Community 63 - "safemode/index.ts"
-Cohesion: 0.17
-Nodes (20): createSafeModeRouter(), safeModeErrorHandler(), SafeModeErrorCode, defaultState(), PhoneState, todayUtc(), computeNextTier(), getTierConfig() (+12 more)
+Cohesion: 0.25
+Nodes (12): safeModeErrorHandler(), SafeModeError, SafeModeErrorCode, computeNextTier(), getTierConfig(), LINK_REGEX, SENDING_WINDOW_END_UTC, SENDING_WINDOW_START_UTC (+4 more)
 
-### Community 64 - "conftest.py"
-Cohesion: 0.13
-Nodes (19): AbstractUser, application_data(), client_for(), _client(), _isolated(), make_user(), public(), fixture (+11 more)
+### Community 64 - "User"
+Cohesion: 0.18
+Nodes (11): AbstractUser, make_user(), A login. Staff sign in with username and password; parents with their mobile…, Role, User, test_login_returns_tokens_and_capabilities(), test_logout_blacklists_refresh_token(), test_principal_cannot_create_or_reset_administrators() (+3 more)
 
 ### Community 65 - "compilerOptions"
 Cohesion: 0.10
@@ -459,28 +460,28 @@ Cohesion: 0.21
 Nodes (19): _about(), admission_status_changed(), admission_submitted(), attendance_absent(), _date(), fee_payment_received(), fee_reminder(), fee_upi_rejected() (+11 more)
 
 ### Community 68 - "portal/tests.py"
-Cohesion: 0.10
-Nodes (22): AssessmentAdmin, MarkInline, register, Assessment, Mark, Meta, A test or exam in one subject for one section, e.g. Unit Test 1 in Class 3 A…, marked() (+14 more)
+Cohesion: 0.11
+Nodes (21): AssessmentAdmin, MarkInline, register, Assessment, Mark, Meta, A test or exam in one subject for one section, e.g. Unit Test 1 in Class 3 A…, marked() (+13 more)
 
 ### Community 69 - "command.tsx"
 Cohesion: 0.11
 Nodes (17): Command, CommandDialogProps, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator (+9 more)
 
 ### Community 70 - "api.ts"
-Cohesion: 0.08
-Nodes (25): describeError(), onSignedOut(), readRefresh(), refreshAccess(), request(), RequestOptions, send(), tokens (+17 more)
+Cohesion: 0.18
+Nodes (13): describeError(), onSignedOut(), readRefresh(), refreshAccess(), request(), RequestOptions, send(), tokens (+5 more)
 
 ### Community 71 - "send.controller.ts"
-Cohesion: 0.15
-Nodes (19): multer, uuid, fileFilter(), sendAudio(), sendButton(), sendDocument(), sendImage(), sendSlider() (+11 more)
+Cohesion: 0.16
+Nodes (18): uuid, fileFilter(), sendAudio(), sendButton(), sendDocument(), sendImage(), sendSlider(), sendText() (+10 more)
 
 ### Community 72 - "fees/admin.py"
 Cohesion: 0.16
 Nodes (13): ConcessionAdmin, FeeAmountInline, FeeHeadAdmin, InstallmentAdmin, InvoiceAdmin, LineInline, PaymentAdmin, PaymentInline (+5 more)
 
-### Community 73 - "apikey.controller.ts"
-Cohesion: 0.13
-Nodes (15): @hapi/boom, createApiKey(), deleteApiKey(), deleteSession(), logout(), reconnect(), ApiKey, apiKeySchema (+7 more)
+### Community 73 - "test_setup_school.py"
+Cohesion: 0.21
+Nodes (10): Person, manage.py setup_school: every question a new school needs, with the example…, Answers each question by matching words in it; Enter (the suggestion) otherwise., run(), test_accept_defaults_stops_at_a_missing_answer(), test_lotus_kids_interactively(), test_replaces_placeholder_classes_and_fees(), test_running_again_keeps_everything() (+2 more)
 
 ### Community 74 - "outbox.py"
 Cohesion: 0.15
@@ -490,9 +491,9 @@ Nodes (17): due_messages(), expire_stale(), _failed(), in_quiet_hours(), queue()
 Cohesion: 0.11
 Nodes (18): devDependencies, autoprefixer, eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, postcss (+10 more)
 
-### Community 76 - "ExamTermViewSet"
-Cohesion: 0.18
-Nodes (11): ResultSheetSerializer, SaveRemarksSerializer, can_edit_remarks(), ExamTermViewSet, action, extend_schema, The class teacher saves remarks and co-scholastic grades., Report cards as one PDF: the whole section, or one student with ?student=. (+3 more)
+### Community 76 - "apikey.controller.ts"
+Cohesion: 0.20
+Nodes (9): createApiKey(), deleteApiKey(), deleteSession(), logout(), reconnect(), ApiKey, apiKeySchema, IApiKey (+1 more)
 
 ### Community 77 - "components.json"
 Cohesion: 0.12
@@ -502,13 +503,13 @@ Nodes (16): aliases, components, hooks, lib, ui, utils, rsc, $schema (+8 more)
 Cohesion: 0.12
 Nodes (15): compilerOptions, allowImportingTsExtensions, isolatedModules, lib, module, moduleDetection, moduleResolution, noEmit (+7 more)
 
-### Community 79 - "report.py"
-Cohesion: 0.18
-Nodes (16): bands(), grade_for(), percent(), The grading scale and co-scholastic areas. The setup wizard lets a school pick…, Return (grade, is_pass) for a percentage, or ("", None) when there is nothing…, build(), enrollment_for(), _guardian_names() (+8 more)
+### Community 79 - "local-reply.service.ts"
+Cohesion: 0.25
+Nodes (9): uploadChatTraining(), AITrainingMessage, schema, basicReply(), generateLocalLearnedReply(), normalize(), safeLearnedReply(), similarity() (+1 more)
 
-### Community 80 - "Message.ts"
-Cohesion: 0.20
-Nodes (13): IMessage, Message, messageSchema, MessageStatus, MessageType, basicReply(), generateLocalLearnedReply(), normalize() (+5 more)
+### Community 80 - "seo.py"
+Cohesion: 0.23
+Nodes (10): GalleryPhoto, Meta, A photo of school life, shown to everyone on the website's gallery., _base_url(), _class_range(), _head(), page(), What search engines and link previews see: the React app's index.html with the… (+2 more)
 
 ### Community 81 - "whatsapp.py"
 Cohesion: 0.15
@@ -519,12 +520,12 @@ Cohesion: 0.17
 Nodes (14): Carousel, CarouselApi, CarouselContent, CarouselContext, CarouselContextProps, CarouselItem, CarouselNext, CarouselOptions (+6 more)
 
 ### Community 83 - "captcha.py"
-Cohesion: 0.26
-Nodes (11): _answer_hash(), enabled(), new_challenge(), _picture(), A self-hosted picture CAPTCHA for the public forms. No outside service, no…, True the first time a nonce is seen; False on a replay., Checks the typed letters. Returns a pass token, or None. A challenge can be…, Call at the top of a public form's POST. Raises a 400 unless the form carries a… (+3 more)
+Cohesion: 0.22
+Nodes (13): _answer_hash(), enabled(), new_challenge(), _picture(), A self-hosted picture CAPTCHA for the public forms. No outside service, no…, True the first time a nonce is seen; False on a replay., Checks the typed letters. Returns a pass token, or None. A challenge can be…, Call at the top of a public form's POST. Raises a 400 unless the form carries a… (+5 more)
 
-### Community 84 - "whatsapp-report.service.ts"
-Cohesion: 0.18
-Nodes (15): DeliveryStatus, historyEntrySchema, IReminder, Reminder, ReminderActionType, reminderSchema, ReminderStatus, campaignReport() (+7 more)
+### Community 84 - "Notice"
+Cohesion: 0.17
+Nodes (8): NoticeAdmin, register, Audience, Meta, Notice, An announcement for staff, parents or both, optionally limited to some sections., test_teacher_cannot_edit_someone_elses_notice(), test_teacher_posts_only_to_parents_of_own_sections()
 
 ### Community 85 - "test_setup_wizard.py"
 Cohesion: 0.23
@@ -542,9 +543,9 @@ Nodes (12): createCampaign(), CampaignDraft, campaigns, FlowDraft, flows, handle
 Cohesion: 0.18
 Nodes (6): fixture, Pictures come back as their plain letters, so the test can 'read' them., readable(), solve(), test_application_needs_a_pass_used_once(), test_switching_it_off()
 
-### Community 89 - "admissions/models.py"
-Cohesion: 0.09
-Nodes (25): Migration, get_private_storage(), Private file storage for student documents and photos. Files live under…, GuardianAdmin, register, StudentAdmin, StudentGuardianInline, An .xlsx sample with this school's classes: a Students sheet, Instructions and… (+17 more)
+### Community 89 - "Enrollment"
+Cohesion: 0.07
+Nodes (35): Enrollment, A student's place in a section for one session., Status, register, TransferCertificateAdmin, Meta, A school leaving / transfer certificate. Requested by the office, issued by the…, Status (+27 more)
 
 ### Community 90 - "chart.tsx"
 Cohesion: 0.23
@@ -562,12 +563,12 @@ Nodes (11): mongo service (mongo:7), redis service (redis:7-alpine), whatsapp se
 Cohesion: 0.22
 Nodes (11): Private document storage, manage.py backup, lkms-backup.timer (nightly 02:30), Encrypted off-site copy (rclone crypt), manage.py restore_backup, Backup retention (daily/weekly/monthly), Read-only GitHub deploy key, Gunicorn lkms-web service (+3 more)
 
-### Community 94 - "students/tests.py"
-Cohesion: 0.17
-Nodes (3): fixture, student(), test_viewing_a_student_is_audited_and_aadhaar_masked()
+### Community 94 - "core/models.py"
+Cohesion: 0.11
+Nodes (6): AuditLogAdmin, register, SchoolProfileAdmin, AuditLog, Append-only record of who did what to student data., test_viewing_a_student_is_audited_and_aadhaar_masked()
 
 ### Community 95 - "SchoolProfileSerializer"
-Cohesion: 0.25
+Cohesion: 0.29
 Nodes (3): The school's settings. Pictures are sent as files; `remove_logo` /…, SchoolProfileSerializer, SchoolProfileView
 
 ### Community 96 - "StudentImportView"
@@ -578,9 +579,9 @@ Nodes (7): _json_list(), APIView, Photos for students already in LKMS, named by 
 Cohesion: 0.24
 Nodes (3): addMessage(), buildLeadForm(), setOpen()
 
-### Community 98 - "AuditLogAdmin"
-Cohesion: 0.25
-Nodes (3): AuditLogAdmin, register, SchoolProfileAdmin
+### Community 98 - "conftest.py"
+Cohesion: 0.31
+Nodes (8): application_data(), client_for(), _client(), _isolated(), public(), fixture, section(), seeded()
 
 ### Community 99 - "LKMS school management system"
 Cohesion: 0.28
@@ -595,12 +596,12 @@ Cohesion: 0.22
 Nodes (9): TC number format, Transfer certificate (TC), Concession, Fee head, Installment, Invoice and receipt numbering, Role permissions (core/permissions.py), Principal/admin dashboard (+1 more)
 
 ### Community 102 - "navigation-menu.tsx"
-Cohesion: 0.13
-Nodes (16): NavigationMenu, NavigationMenuContent, NavigationMenuIndicator, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle, NavigationMenuViewport, ToggleGroup (+8 more)
-
-### Community 103 - "sheet.tsx"
 Cohesion: 0.25
-Nodes (8): SheetContent, SheetContentProps, SheetDescription, SheetFooter(), SheetHeader(), SheetOverlay, SheetTitle, sheetVariants
+Nodes (8): NavigationMenu, NavigationMenuContent, NavigationMenuIndicator, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle, NavigationMenuViewport, @radix-ui/react-navigation-menu
+
+### Community 103 - "SafeModeManager"
+Cohesion: 0.17
+Nodes (9): dotenv, createSafeModeRouter(), SafeModeManager, SafeModeTier, IS_EXECUTE, localEnv, main(), Recommendation (+1 more)
 
 ### Community 104 - "WhatsApp alerts"
 Cohesion: 0.29
@@ -610,17 +611,17 @@ Nodes (8): JWT Authentication, School-wide CSV reports, Daily attendance registe
 Cohesion: 0.32
 Nodes (8): Aadhaar masking, Admission (S.R.) number, Admission workflow (submitted to admitted), Audit log, Hidden website honeypot field, Public admissions API (apply/track/documents), Bulk student import (import_students), Sample .xlsx template
 
-### Community 106 - "scripts"
-Cohesion: 0.25
-Nodes (8): scripts, build, dev, format, lint, seed, start, test
+### Community 106 - "attendance/tests.py"
+Cohesion: 0.53
+Nodes (8): payload(), school_day(), test_class_teacher_marks_and_corrects_attendance(), test_future_dates_and_old_dates_are_refused_for_teachers(), test_month_summary(), test_students_from_other_sections_are_refused(), test_subject_teacher_can_view_but_not_mark(), test_teacher_of_another_class_cannot_see_the_register()
 
 ### Community 107 - "campaign.controller.ts"
-Cohesion: 0.67
-Nodes (5): createCampaign(), deleteCampaign(), getCampaignLogs(), listCampaigns(), reCampaign()
+Cohesion: 0.43
+Nodes (7): createCampaign(), deleteCampaign(), getCampaign(), getCampaignLogs(), listCampaigns(), reCampaign(), getCampaignById()
 
-### Community 108 - "breadcrumb.tsx"
+### Community 108 - "drawer.tsx"
 Cohesion: 0.22
-Nodes (8): Breadcrumb, BreadcrumbEllipsis(), BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator(), @radix-ui/react-slot
+Nodes (7): DrawerContent, DrawerDescription, DrawerFooter(), DrawerHeader(), DrawerOverlay, DrawerTitle, vaul
 
 ### Community 109 - "Board/school format checklist"
 Cohesion: 0.38
@@ -630,17 +631,13 @@ Nodes (7): Board/school format checklist, Co-scholastic areas (CO_SCHOLASTIC_ARE
 Cohesion: 0.29
 Nodes (7): scripts, build, build:dev, dev, lint, preview, typecheck
 
-### Community 111 - "drawer.tsx"
-Cohesion: 0.22
-Nodes (7): DrawerContent, DrawerDescription, DrawerFooter(), DrawerHeader(), DrawerOverlay, DrawerTitle, vaul
-
 ### Community 112 - "send_whatsapp.py"
 Cohesion: 0.33
 Nodes (3): Command, BaseCommand, Deliver queued WhatsApp messages. Run it as a service on the server: python…
 
 ### Community 113 - "certificates/tests.py"
-Cohesion: 0.48
-Nodes (6): request_tc(), test_office_can_withdraw_a_request_but_not_an_issued_tc(), test_office_requests_and_principal_issues(), test_one_tc_per_student_and_cancelling_restores_the_student(), test_teachers_and_accountants_cannot_see_tcs(), test_unpaid_fees_block_the_tc_unless_the_principal_gives_a_reason()
+Cohesion: 0.25
+Nodes (12): request_tc(), test_date_of_birth_in_words(), test_office_can_withdraw_a_request_but_not_an_issued_tc(), test_office_requests_and_principal_issues(), test_one_tc_per_student_and_cancelling_restores_the_student(), test_teachers_and_accountants_cannot_see_tcs(), test_unpaid_fees_block_the_tc_unless_the_principal_gives_a_reason(), date_words() (+4 more)
 
 ### Community 115 - "Setup wizard (deploy/setup_wizard.py)"
 Cohesion: 0.70
@@ -670,29 +667,37 @@ Nodes (3): Lotus Kids School Fee UPI QR Code (example), Lotus Kids Education Soc
 Cohesion: 0.50
 Nodes (3): carry_over(), Migration, Installs made before this version: keep the board and the UPI account from…
 
-### Community 165 - "scroll-area.tsx"
-Cohesion: 0.50
-Nodes (3): ScrollArea, ScrollBar, @radix-ui/react-scroll-area
+### Community 139 - "sheet.tsx"
+Cohesion: 0.25
+Nodes (8): SheetContent, SheetContentProps, SheetDescription, SheetFooter(), SheetHeader(), SheetOverlay, SheetTitle, sheetVariants
+
+### Community 165 - "scripts"
+Cohesion: 0.25
+Nodes (8): scripts, build, dev, format, lint, seed, start, test
+
+### Community 167 - "contact.controller.ts"
+Cohesion: 0.52
+Nodes (6): deleteContact(), getContacts(), getGroups(), importContacts(), updateContact(), updateContactGroups()
 
 ## Knowledge Gaps
-- **533 isolated node(s):** `Migration`, `Migration`, `Migration`, `Migration`, `Status` (+528 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1153 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **532 isolated node(s):** `Migration`, `Migration`, `Migration`, `Migration`, `Status` (+527 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1151 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `SchoolProfile` connect `SchoolProfile` to `AcademicSession`, `exams/views.py`, `django_db`, `Command`, `setup_school.py`, `users/views.py`, `Invoice`, `bulk_import.py`, `AdmissionApplication`, `fees/views.py`, `AuditLog`, `fees/services.py`, `Student`, `core/models.py`, `templates.py`, `captcha.py`, `test_captcha.py`, `admissions/models.py`, `students/tests.py`, `SchoolProfileSerializer`, `AuditLogAdmin`, `RandomPath`?**
+- **Why does `SchoolProfile` connect `SchoolProfile` to `exams/views.py`, `academics/models.py`, `django_db`, `setup_school.py`, `users/views.py`, `Invoice`, `bulk_import.py`, `AdmissionApplication`, `fees/views.py`, `core/views.py`, `fees/services.py`, `Student`, `has_capability`, `templates.py`, `test_setup_school.py`, `seo.py`, `captcha.py`, `test_captcha.py`, `core/models.py`, `SchoolProfileSerializer`, `RandomPath`?**
   _High betweenness centrality (0.034) - this node is a cross-community bridge._
-- **Why does `Student` connect `Student` to `conftest.py`, `AcademicSession`, `exams/views.py`, `certificates/services.py`, `setup_school.py`, `ExamTermViewSet`, `assessments/views.py`, `admissions/tests.py`, `certificates/tests.py`, `parent_login.py`, `RandomPath`, `admissions/models.py`, `Invoice`, `core/models.py`, `bulk_import.py`, `AdmissionApplication`, `SchoolProfile`?**
+- **Why does `Student` connect `Student` to `conftest.py`, `exams/views.py`, `has_capability`, `SchoolProfile`, `academics/models.py`, `setup_school.py`, `admissions/tests.py`, `certificates/tests.py`, `parent_login.py`, `core/models.py`, `RandomPath`, `Enrollment`, `Invoice`, `bulk_import.py`, `AdmissionApplication`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Why does `WhatsApp alerts` connect `WhatsApp alerts` to `templates.py`, `UPI QR payment with staff verification`, `Invoice and receipt numbering`, `LKMS school management system`, `Board/school format checklist`, `Blastup WhatsApp server (kalpintelligence/Blastup)`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+  _High betweenness centrality (0.014) - this node is a cross-community bridge._
 - **Are the 40 inferred relationships involving `SchoolProfile` (e.g. with `AdmissionApplication` and `admit()`) actually correct?**
   _`SchoolProfile` has 40 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 28 inferred relationships involving `Enrollment` (e.g. with `EnrollmentSerializer` and `my_sections()`) actually correct?**
   _`Enrollment` has 28 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Migration`, `Migration`, `Migration` to the rest of the system?**
-  _533 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _532 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `lib/types.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05357142857142857 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04283447911158118 - nodes in this community are weakly interconnected._

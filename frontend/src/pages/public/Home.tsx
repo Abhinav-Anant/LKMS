@@ -92,9 +92,8 @@ export default function Home() {
         {/* Hero */}
         <section id="top" className="relative overflow-hidden">
           <HeroPhoto />
-          <Blobs />
-          <div className="container relative grid items-center gap-6 pb-12 pt-8 md:grid-cols-[1.05fr_1fr] md:gap-10 md:pb-20 md:pt-14">
-            <div className="space-y-6 text-center md:text-left">
+          <div className="container relative pb-52 pt-8 md:pb-28 md:pt-14">
+            <div className="mx-auto max-w-xl space-y-6 text-center md:mx-0 md:text-left">
               {session && (
                 <p className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-white/80 px-4 py-1.5 text-sm font-medium text-primary shadow-sm">
                   <span className="relative flex h-2.5 w-2.5">
@@ -125,9 +124,10 @@ export default function Home() {
                 <Fact icon={<ShieldCheck />}>Apply online in about 10 minutes</Fact>
               </ul>
             </div>
-            <div className="mx-auto w-full max-w-[min(100%,34rem)]">
-              <Hero3D brand={brand} />
-            </div>
+          </div>
+          {/* The blocks rest on the ground in the corner, clear of the photo. */}
+          <div className="pointer-events-none absolute bottom-2 right-1/2 w-[min(80vw,22rem)] translate-x-1/2 md:bottom-4 md:right-[3%] md:w-[27rem] md:translate-x-0">
+            <Hero3D brand={brand} />
           </div>
           <Wave />
         </section>
@@ -431,26 +431,12 @@ function Contact({ icon, label, value, href }: { icon: ReactNode; label: string;
   );
 }
 
-/** The school grounds, faded into the cream page so the hero text stays readable. */
+/** The school grounds behind the hero, with cream only where the text sits so the photo stays clear. */
 function HeroPhoto() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
-      <img src={heroCampus} alt="" decoding="async"
-        className="h-full w-full scale-105 object-cover object-[60%_55%] opacity-50 md:opacity-75" />
-      {/* Cream veil: heavy behind the text, lighter on the picture side, melting into the page above and below. */}
-      <div className="absolute inset-0 bg-[#fffaf3]/70 md:bg-transparent md:bg-gradient-to-r md:from-[#fffaf3] md:from-25% md:via-[#fffaf3]/75 md:via-55% md:to-[#fffaf3]/30" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#fffaf3_0%,transparent_22%,transparent_70%,#fff_100%)]" />
-    </div>
-  );
-}
-
-/** Soft colour shapes behind the hero. */
-function Blobs() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-primary/15 blur-3xl" />
-      <div className="absolute right-[-6rem] top-10 h-96 w-96 rounded-full bg-[#ffc23d]/25 blur-3xl" />
-      <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-[#ff8fb1]/20 blur-3xl" />
+      <img src={heroCampus} alt="" decoding="async" className="h-full w-full object-cover object-[60%_60%]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#fffaf3e6_0%,#fffaf3d9_60%,transparent_78%)] md:bg-[linear-gradient(to_right,#fffaf3f2_0%,#fffaf3d9_32%,transparent_58%)]" />
     </div>
   );
 }

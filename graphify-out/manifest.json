@@ -1356,16 +1356,16 @@
     "semantic_hash": "f04a4f5795c524973dca033257d2cfc0"
   },
   "frontend/src/components/landing/Hero3D.tsx": {
-    "mtime": 1793610932.821175,
-    "seen": 1793611141.2008214,
-    "ast_hash": "dbf4327c695f26dcaed651c99be099e7",
-    "semantic_hash": "dbf4327c695f26dcaed651c99be099e7"
+    "mtime": 1793611962.5005958,
+    "seen": 1793612092.2190256,
+    "ast_hash": "cdd1ebcbaaf9e294651086dd218cdfaf",
+    "semantic_hash": ""
   },
   "frontend/src/components/landing/HeroScene.tsx": {
-    "mtime": 1793610932.821175,
-    "seen": 1793611141.2008226,
-    "ast_hash": "0ab30aca69e1f6457fc9993bdb1163b9",
-    "semantic_hash": "0ab30aca69e1f6457fc9993bdb1163b9"
+    "mtime": 1793611937.4344923,
+    "seen": 1793612092.2190273,
+    "ast_hash": "ca2a5ccf5533517977ddec89c49aaa02",
+    "semantic_hash": ""
   },
   "frontend/src/components/landing/PhotoReel.tsx": {
     "mtime": 1793610932.821175,
@@ -1782,9 +1782,9 @@
     "semantic_hash": "495f6f02d5e9e53a36eb7742c6207bb8"
   },
   "frontend/src/pages/public/Home.tsx": {
-    "mtime": 1793611112.2567089,
-    "seen": 1793611141.2008915,
-    "ast_hash": "28d5a17f675873bf8c8c91d7297d2250",
+    "mtime": 1793612050.6920183,
+    "seen": 1793612092.219105,
+    "ast_hash": "ff1bfcf8a3a425a7754b67585f38a691",
     "semantic_hash": ""
   },
   "frontend/src/pages/public/Pay.tsx": {
@@ -2028,10 +2028,10 @@
     "semantic_hash": "ea3b5c2d9c1cc5d2b3fb3af706f2ca1a"
   },
   "frontend/vite.config.ts": {
-    "mtime": 1793610932.8917964,
-    "seen": 1793611141.2009337,
-    "ast_hash": "64d0b06dae22d023b36f2ff5a1461ce5",
-    "semantic_hash": "64d0b06dae22d023b36f2ff5a1461ce5"
+    "mtime": 1793611507.6666698,
+    "seen": 1793611785.0665245,
+    "ast_hash": "16320378174345d7f69343aa2cd850bc",
+    "semantic_hash": ""
   },
   "whatsapp-server/server/jest.config.js": {
     "mtime": 1793610932.9135048,
@@ -2706,9 +2706,9 @@
     "semantic_hash": "a880356a92c8913f80ffbb253bc1e7a4"
   },
   ".claude/launch.json": {
-    "mtime": 1793611083.571954,
-    "seen": 1793611141.200569,
-    "ast_hash": "0931d8571971ba3b5b2ee12961543e57",
+    "mtime": 1793611511.1249409,
+    "seen": 1793611785.0661201,
+    "ast_hash": "b55860cd537b08b936764692f001986a",
     "semantic_hash": ""
   },
   ".claude/settings.json": {
@@ -2724,9 +2724,9 @@
     "semantic_hash": ""
   },
   "frontend/src/assets/hero-campus.webp": {
-    "mtime": 1793611020.1573596,
-    "seen": 1793611141.201048,
-    "ast_hash": "fba79f8b55d5cd4732ef39fbca7f1250",
+    "mtime": 1793611705.1076894,
+    "seen": 1793611785.0666492,
+    "ast_hash": "27062f5db4d45359e680548a7353cfdb",
     "semantic_hash": ""
   }
 }

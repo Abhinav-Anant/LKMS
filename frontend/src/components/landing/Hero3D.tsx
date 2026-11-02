@@ -36,7 +36,7 @@ export function Hero3D({ brand }: { brand: string }) {
   }, []);
 
   return (
-    <div className="relative aspect-square w-full">
+    <div className="relative aspect-[2.1/1] w-full">
       <div className={cn("absolute inset-0 transition-opacity duration-700", ready && "opacity-0")}>
         <HeroFallback brand={brand} />
       </div>
@@ -51,11 +51,11 @@ export function Hero3D({ brand }: { brand: string }) {
   );
 }
 
-/** A flat drawing of the stacked alphabet blocks. */
+/** A flat drawing of the row of alphabet blocks. */
 function HeroFallback({ brand }: { brand: string }) {
   const cube = (colour: string, letter: string, cls: string) => (
     <div
-      className={cn("absolute flex aspect-square w-[22%] items-center justify-center rounded-[18%] font-display text-[clamp(2rem,9vw,4.5rem)] font-bold text-white shadow-[inset_0_-10px_0_rgba(0,0,0,0.12),0_18px_30px_-12px_rgba(40,30,60,0.35)]", cls)}
+      className={cn("absolute bottom-[16%] flex aspect-square w-[20%] items-center justify-center rounded-[18%] font-display text-[clamp(1.5rem,6vw,3rem)] font-bold text-white shadow-[inset_0_-8px_0_rgba(0,0,0,0.12),0_14px_24px_-10px_rgba(40,30,60,0.35)]", cls)}
       style={{ backgroundColor: colour }}
     >
       <span className="flex h-[78%] w-[78%] items-center justify-center rounded-[16%] border-[3px] border-white/60">{letter}</span>
@@ -63,13 +63,11 @@ function HeroFallback({ brand }: { brand: string }) {
   );
   return (
     <div className="relative h-full w-full" aria-hidden="true">
-      <div className="absolute bottom-[14%] left-1/2 h-[6%] w-[52%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(40,30,60,0.25),transparent)]" />
-      {cube(PALETTE.coral, "B", "bottom-[18%] left-[27%] -rotate-3")}
-      {cube(PALETTE.sky, "C", "bottom-[18%] left-[51%] rotate-3")}
-      {cube(brand, "A", "bottom-[40%] left-[39%] rotate-6")}
-      <div className="absolute left-[16%] top-[22%] aspect-square w-[16%] rounded-full bg-[conic-gradient(#ff6b5e_0_25%,#fff_0_33%,#ffc23d_0_58%,#fff_0_66%,#45a6f2_0_91%,#fff_0)] shadow-lg" />
-      <div className="absolute right-[22%] top-[18%] font-display text-[clamp(2rem,8vw,4rem)] text-[#ffc23d] drop-shadow">★</div>
-      <div className="absolute right-[14%] bottom-[24%] aspect-square w-[11%] rounded-full shadow-md" style={{ backgroundColor: PALETTE.coral }} />
+      <div className="absolute bottom-[10%] left-1/2 h-[10%] w-[70%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(40,30,60,0.25),transparent)]" />
+      {cube(brand, "A", "left-[17%] -rotate-3")}
+      {cube(PALETTE.coral, "B", "left-[40%] rotate-1")}
+      {cube(PALETTE.sky, "C", "left-[63%] rotate-3")}
+      <div className="absolute right-[4%] top-[8%] font-display text-[clamp(1.5rem,5vw,2.5rem)] text-[#ffc23d] drop-shadow">★</div>
     </div>
   );
 }
