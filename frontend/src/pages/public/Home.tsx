@@ -6,6 +6,7 @@ import {
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+import heroCampus from "@/assets/hero-campus.webp";
 import { Hero3D } from "@/components/landing/Hero3D";
 import { PhotoReel } from "@/components/landing/PhotoReel";
 import { SchoolName } from "@/components/SchoolName";
@@ -90,6 +91,7 @@ export default function Home() {
       <main id="main">
         {/* Hero */}
         <section id="top" className="relative overflow-hidden">
+          <HeroPhoto />
           <Blobs />
           <div className="container relative grid items-center gap-6 pb-12 pt-8 md:grid-cols-[1.05fr_1fr] md:gap-10 md:pb-20 md:pt-14">
             <div className="space-y-6 text-center md:text-left">
@@ -426,6 +428,19 @@ function Contact({ icon, label, value, href }: { icon: ReactNode; label: string;
       <span className="text-sm font-semibold uppercase tracking-wider text-foreground/60">{label}</span>
       <span className="break-words font-medium text-[#1f1a33] group-hover:text-primary">{value}</span>
     </a>
+  );
+}
+
+/** The school grounds, faded into the cream page so the hero text stays readable. */
+function HeroPhoto() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <img src={heroCampus} alt="" decoding="async"
+        className="h-full w-full scale-105 object-cover object-[60%_55%] opacity-50 md:opacity-75" />
+      {/* Cream veil: heavy behind the text, lighter on the picture side, melting into the page above and below. */}
+      <div className="absolute inset-0 bg-[#fffaf3]/70 md:bg-transparent md:bg-gradient-to-r md:from-[#fffaf3] md:from-25% md:via-[#fffaf3]/75 md:via-55% md:to-[#fffaf3]/30" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#fffaf3_0%,transparent_22%,transparent_70%,#fff_100%)]" />
+    </div>
   );
 }
 
